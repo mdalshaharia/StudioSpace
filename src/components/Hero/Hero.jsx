@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarDays, MapPin, Search } from "lucide-react";
 import { format } from "date-fns";
@@ -32,6 +32,11 @@ export default function Hero() {
   const [time, setTime] = useState("");
   const [type, setType] = useState("any");
   const [calOpen, setCalOpen] = useState(false);
+  const [today, setToday] = useState();
+
+  useEffect(() => {
+    setToday(new Date());
+  }, []);
 
   const whenLabel = date
     ? `${format(date, "MMM d")}${time ? `, ${time}` : ""}`
@@ -116,7 +121,7 @@ export default function Hero() {
                       mode="single"
                       selected={date}
                       onSelect={setDate}
-                      disabled={{ before: new Date() }}
+                      disabled={today ? { before: today } : undefined}
                     />
                     <div className="mt-3 flex flex-wrap gap-1.5 border-t border-white/10 pt-3">
                       {TIME_SLOTS.map((t) => (
