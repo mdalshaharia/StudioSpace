@@ -104,14 +104,16 @@ export default function Hero() {
                   When
                 </span>
                 <Popover open={calOpen} onOpenChange={setCalOpen}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="flex w-full items-center gap-2 text-left text-sm font-medium text-white outline-none"
-                    >
-                      <CalendarDays className="h-4 w-4 shrink-0 text-neutral-500" />
-                      <span className={date ? "" : "text-neutral-300"}>{whenLabel}</span>
-                    </button>
+                  <PopoverTrigger
+                    render={
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-2 text-left text-sm font-medium text-white outline-none"
+                      />
+                    }
+                  >
+                    <CalendarDays className="h-4 w-4 shrink-0 text-neutral-500" />
+                    <span className={date ? "" : "text-neutral-300"}>{whenLabel}</span>
                   </PopoverTrigger>
                   <PopoverContent
                     align="start"

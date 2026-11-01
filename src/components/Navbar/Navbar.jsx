@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { authClient, signOut, useSession } from "@/app/lib/auth-client";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
   LayoutDashboard,
@@ -24,12 +25,14 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Image from "next/image";
 
 /* ---------------------------- route config ---------------------------- */
 const NAV_LINKS = [
@@ -61,21 +64,33 @@ const initials = (name = "") =>
     .map((n) => n[0]?.toUpperCase())
     .join("") || "U";
 
-function Logo({ onClick, className = "text-neutral-900" }) {
+function Logo({ onClick}) {
   return (
     <Link href="/" onClick={onClick} className="flex items-center gap-2.5" aria-label="StudioSpace home">
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-amber-400 text-base font-black text-neutral-900">
-        N
+      <span className="grid h-8 w-8 place-items-center rounded-lg  text-base font-black">
+        <Image src='/brad-logo.png' height={24} width={24} alt="StudioSpace Logo" />
       </span>
-      <span className={`text-lg font-bold tracking-widest ${className}`}>StudioSpace</span>
+      <span className={`text-lg font-bold tracking-widest`}>StudioSpace</span>
     </Link>
   );
 }
 
 
-export default function Navbar({ user = null, onLogout }) {
+export default function Navbar() {
+  const { data: session, isPending } = useSession();
+  const user = session?.user ?? null;
+  console.log(user)
+  const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  const handleLogout = async () => {
+    console.log('clicked')
+     await authClient.signOut()
+    setOpen(false);
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-white/70 backdrop-blur-md supports-[backdrop-filter]:bg-white/60">
@@ -115,11 +130,10 @@ export default function Navbar({ user = null, onLogout }) {
                           <Link
                             href={href}
                             aria-current={active ? "page" : undefined}
-                            className={`uppercase tracking-wide text-xs ${
-                              active
+                            className={`uppercase tracking-wide text-xs ${active
                                 ? "bg-amber-400/10 font-semibold text-amber-400"
                                 : "text-neutral-300 hover:text-white"
-                            }`}
+                              }`}
                           />
                         }
                       >
@@ -153,10 +167,7 @@ export default function Navbar({ user = null, onLogout }) {
                       </SheetClose>
                     ))}
                     <button
-                      onClick={() => {
-                        setOpen(false);
-                        onLogout?.();
-                      }}
+                      onClick={handleLogout}
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10"
                     >
                       <LogOut className="h-4 w-4" />
@@ -169,7 +180,7 @@ export default function Navbar({ user = null, onLogout }) {
                       nativeButton={false}
                       render={
                         <Link
-                          href="/login"
+                          href="/signin"
                           className="btn btn-outline border-white/20 text-white"
                         />
                       }
@@ -180,7 +191,7 @@ export default function Navbar({ user = null, onLogout }) {
                       nativeButton={false}
                       render={
                         <Link
-                          href="/register"
+                          href="/signup"
                           className="btn rounded-full border-none bg-amber-400 text-neutral-900 hover:bg-amber-300"
                         />
                       }
@@ -211,16 +222,14 @@ export default function Navbar({ user = null, onLogout }) {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative px-3 py-2 text-sm font-medium uppercase tracking-wide transition-colors ${
-                      active ? "text-amber-600" : "text-neutral-600 hover:text-neutral-900"
-                    }`}
+                    className={`relative px-3 py-2 text-xs font-bold  uppercase tracking-wide transition-colors text-black ${active ? "text-amber-600" : "text-black hover:text-neutral-900"
+                      }`}
                   >
                     {label}
                     {/* active route indicator */}
                     <span
-                      className={`absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-amber-500 transition-opacity ${
-                        active ? "opacity-100" : "opacity-0"
-                      }`}
+                      className={`absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-amber-500 transition-opacity ${active ? "opacity-100" : "opacity-0"
+                        }`}
                     />
                   </Link>
                 </li>
@@ -231,7 +240,9 @@ export default function Navbar({ user = null, onLogout }) {
 
         {/* ---------- right: auth area ---------- */}
         <div className="navbar-end gap-2">
-          {user ? (
+          {isPending ? (
+            <div className="h-9 w-9 animate-pulse rounded-full bg-neutral-200" aria-hidden />
+          ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
@@ -252,7 +263,16 @@ export default function Navbar({ user = null, onLogout }) {
                 align="end"
                 className="w-60 border-white/10 bg-neutral-900 text-neutral-200"
               >
-                <DropdownMenuLabel className="truncate text-white">{user.name}</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="truncate text-white">
+                    {user.name}
+                    {user.email && (
+                      <span className="block truncate text-xs font-normal text-neutral-400">
+                        {user.email}
+                      </span>
+                    )}
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-white/10" />
                 {USER_MENU.map(({ label, href, icon: Icon }) => (
                   <DropdownMenuItem
@@ -271,7 +291,7 @@ export default function Navbar({ user = null, onLogout }) {
                 ))}
                 <DropdownMenuSeparator className="bg-white/10" />
                 <DropdownMenuItem
-                  onSelect={() => onLogout?.()}
+                  onClick={handleLogout}
                   className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-400"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -288,14 +308,14 @@ export default function Navbar({ user = null, onLogout }) {
                 Sign in
               </Link>
               <Link
-                href="/register"
+                href="/signup"
                 className="btn hidden rounded-full border-none bg-amber-400 px-5 text-neutral-900 hover:bg-amber-300 sm:inline-flex"
               >
                 Get started
               </Link>
               {/* very small screens: single compact CTA (full options live in the drawer) */}
               <Link
-                href="/login"
+                href="/signin"
                 className="btn btn-sm rounded-full border-none bg-amber-400 text-neutral-900 hover:bg-amber-300 sm:hidden"
               >
                 Sign in
@@ -311,8 +331,8 @@ export default function Navbar({ user = null, onLogout }) {
 function UserAvatar({ user }) {
   return (
     <Avatar className="h-9 w-9 ring-2 ring-amber-400/70">
-      <AvatarImage src={user.photoURL} alt={user.name} />
-      <AvatarFallback className="bg-amber-400 font-semibold text-neutral-900">
+      <AvatarImage src={user.image} alt={user.name} />
+      <AvatarFallback className="font-semibold text-neutral-900">
         {initials(user.name)}
       </AvatarFallback>
     </Avatar>
