@@ -3,6 +3,10 @@ import Navbar from "../components/Navbar/Navbar";
 import Hero from "@/components/Hero/Hero";
 import ByCategory from "@/components/ByCategory/ByCategory";
 import Featured from "@/components/Featured/Featured";
+import Preview from "@/components/Preview/Preview";
+import BookingWorks from "@/components/BookingWorks/BookingWorks";
+import TrustSafety from "@/components/TrustSafety/TrustSafety";
+import Footer from "@/components/Footer/Footer";
 
 export default function Home() {
   return (
@@ -11,6 +15,10 @@ export default function Home() {
       <Hero></Hero>
       <ByCategory></ByCategory>
       <Featured></Featured>
+      <Preview></Preview>
+      <BookingWorks></BookingWorks>
+      <TrustSafety></TrustSafety>
+      <Footer></Footer>
     </div>
   );
 }

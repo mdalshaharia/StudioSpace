@@ -282,7 +282,7 @@ export default function Navbar({ user = null, onLogout }) {
           ) : (
             <>
               <Link
-                href="/login"
+                href="/signin"
                 className="btn btn-ghost hidden text-neutral-700 hover:bg-black/5 sm:inline-flex"
               >
                 Sign in
