@@ -36,7 +36,7 @@ import Image from "next/image";
 
 /* ---------------------------- route config ---------------------------- */
 const NAV_LINKS = [
-  { label: "Explore", href: "/explore" },
+  { label: "Explore", href: "/explore-studio" },
   { label: "How it works", href: "/how-it-works" },
   { label: "List your space", href: "/list-your-space" },
   { label: "Pricing", href: "/pricing" },
@@ -64,13 +64,13 @@ const initials = (name = "") =>
     .map((n) => n[0]?.toUpperCase())
     .join("") || "U";
 
-function Logo({ onClick}) {
+function Logo({ onClick }) {
   return (
     <Link href="/" onClick={onClick} className="flex items-center gap-2.5" aria-label="StudioSpace home">
-      <span className="grid h-8 w-8 place-items-center rounded-lg  text-base font-black">
+      <span className="grid h-8 w-8 place-items-center rounded-lg text-base font-black">
         <Image src='/brad-logo.png' height={24} width={24} alt="StudioSpace Logo" />
       </span>
-      <span className={`text-lg font-bold tracking-widest`}>StudioSpace</span>
+      <span className="text-lg font-bold tracking-widest text-white">StudioSpace</span>
     </Link>
   );
 }
@@ -79,21 +79,19 @@ function Logo({ onClick}) {
 export default function Navbar() {
   const { data: session, isPending } = useSession();
   const user = session?.user ?? null;
-  console.log(user)
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const handleLogout = async () => {
-    console.log('clicked')
-     await authClient.signOut()
+    await authClient.signOut();
     setOpen(false);
     router.push("/");
     router.refresh();
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/5 bg-white/70 backdrop-blur-md supports-[backdrop-filter]:bg-white/60">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-md supports-[backdrop-filter]:bg-neutral-950/60">
       <nav className="navbar mx-auto min-h-16 max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* ---------- left: hamburger (mobile) + logo ---------- */}
         <div className="navbar-start gap-1">
@@ -101,7 +99,7 @@ export default function Navbar() {
             <SheetTrigger
               render={
                 <button
-                  className="btn btn-ghost btn-square text-neutral-900 lg:hidden"
+                  className="btn btn-ghost btn-square text-neutral-200 hover:text-white hover:bg-white/10 lg:hidden"
                   aria-label="Open menu"
                 />
               }
@@ -222,14 +220,16 @@ export default function Navbar() {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative px-3 py-2 text-xs font-bold  uppercase tracking-wide transition-colors text-black ${active ? "text-amber-600" : "text-black hover:text-neutral-900"
-                      }`}
+                    className={`relative px-3.5 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      active ? "text-amber-400 font-bold" : "text-neutral-300 hover:text-white"
+                    }`}
                   >
                     {label}
                     {/* active route indicator */}
                     <span
-                      className={`absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-amber-500 transition-opacity ${active ? "opacity-100" : "opacity-0"
-                        }`}
+                      className={`absolute inset-x-3 -bottom-[17px] h-0.5 rounded-full bg-amber-400 transition-opacity ${
+                        active ? "opacity-100" : "opacity-0"
+                      }`}
                     />
                   </Link>
                 </li>
@@ -241,22 +241,22 @@ export default function Navbar() {
         {/* ---------- right: auth area ---------- */}
         <div className="navbar-end gap-2">
           {isPending ? (
-            <div className="h-9 w-9 animate-pulse rounded-full bg-neutral-200" aria-hidden />
+            <div className="h-9 w-9 animate-pulse rounded-full bg-neutral-800" aria-hidden />
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
                   <button
-                    className="flex items-center gap-2 rounded-full p-1 pr-2 outline-none ring-amber-400/60 transition hover:bg-black/5 focus-visible:ring-2"
+                    className="flex items-center gap-2 rounded-full p-1 pr-2 outline-none ring-amber-400/60 transition hover:bg-white/5 focus-visible:ring-2"
                     aria-label="Open user menu"
                   />
                 }
               >
                 <UserAvatar user={user} />
-                <span className="hidden max-w-[120px] truncate text-sm font-medium text-neutral-900 md:block">
+                <span className="hidden max-w-[120px] truncate text-sm font-medium text-neutral-200 md:block">
                   {user.name}
                 </span>
-                <ChevronDown className="hidden h-4 w-4 text-neutral-500 md:block" />
+                <ChevronDown className="hidden h-4 w-4 text-neutral-400 md:block" />
               </DropdownMenuTrigger>
 
               <DropdownMenuContent
@@ -303,20 +303,20 @@ export default function Navbar() {
             <>
               <Link
                 href="/signin"
-                className="btn btn-ghost hidden text-neutral-700 hover:bg-black/5 sm:inline-flex"
+                className="btn btn-ghost hidden text-neutral-300 hover:text-white hover:bg-white/10 sm:inline-flex font-medium"
               >
                 Sign in
               </Link>
               <Link
                 href="/signup"
-                className="btn hidden rounded-full border-none bg-amber-400 px-5 text-neutral-900 hover:bg-amber-300 sm:inline-flex"
+                className="btn hidden rounded-full border-none bg-amber-400 px-5 text-neutral-900 hover:bg-amber-300 sm:inline-flex font-semibold shadow-sm"
               >
                 Get started
               </Link>
               {/* very small screens: single compact CTA (full options live in the drawer) */}
               <Link
                 href="/signin"
-                className="btn btn-sm rounded-full border-none bg-amber-400 text-neutral-900 hover:bg-amber-300 sm:hidden"
+                className="btn btn-sm rounded-full border-none bg-amber-400 text-neutral-900 hover:bg-amber-300 sm:hidden font-semibold"
               >
                 Sign in
               </Link>

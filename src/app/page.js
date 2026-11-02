@@ -10,15 +10,15 @@ import Footer from "@/components/Footer/Footer";
 
 export default function Home() {
   return (
-    <div>
-      <Navbar></Navbar>
-      <Hero></Hero>
-      <ByCategory></ByCategory>
-      <Featured></Featured>
-      <Preview></Preview>
-      <BookingWorks></BookingWorks>
-      <TrustSafety></TrustSafety>
-      <Footer></Footer>
-    </div>
+    <main className="min-h-screen bg-neutral-950 text-neutral-100">
+      <Navbar />
+      <Hero />
+      <ByCategory />
+      <Featured />
+      <Preview />
+      <BookingWorks />
+      <TrustSafety />
+      <Footer />
+    </main>
   );
 }
