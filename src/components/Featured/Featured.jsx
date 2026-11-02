@@ -1,82 +1,57 @@
-/**
- * StudioSpace – Featured studios
- * Stack: Next.js (App Router) + Tailwind + daisyUI
- * Server component (no "use client" needed).
- *
- * Usage (app/page.jsx):
- *   import FeaturedStudios from "@/components/FeaturedStudios";
- *   <FeaturedStudios />
- *
- * Replace STUDIOS with data from your API / MongoDB (same shape), e.g.
- *   const studios = await fetch(`${process.env.API_URL}/studios?featured=true`).then(r => r.json());
- *   <FeaturedStudios studios={studios} />
- *
- * To use real photos, add `image` to each studio and uncomment the <Image /> line.
- */
+"use client";
 
+import { useContext } from "react";
+import ProductContext from "@/context/productContext";
 import Link from "next/link";
-// import Image from "next/image";
+import Image from "next/image";
 
-const STUDIOS = [
-  {
-    id: "white-box-cyc",
-    name: "White Box Cyc",
-    category: "Photography",
-    tag: "Cyc wall",
-    meta: "Downtown · 120 sq m",
-    price: 60,
-    gradient: "from-[#4a3a26] to-[#2c2318]",
-  },
-  {
-    id: "stage-nine",
-    name: "Stage Nine",
-    category: "Film",
-    tag: "Sound stage",
-    meta: "Industrial district · 300 sq m",
-    price: 140,
-    gradient: "from-[#26333c] to-[#1a232a]",
-  },
-  {
-    id: "low-tide-sessions",
-    name: "Low Tide Sessions",
-    category: "Music",
-    tag: "Recording suite",
-    meta: "Riverside · Live room + booth",
-    price: 55,
-    gradient: "from-[#3a2c45] to-[#241b2c]",
-  },
-  {
-    id: "the-couch-room",
-    name: "The Couch Room",
-    category: "Podcast",
-    tag: "Podcast lounge",
-    meta: "Old town · 4 mics",
-    price: 45,
-    gradient: "from-[#2b4033] to-[#1a2820]",
-  },
+const GRADIENTS = [
+  "from-[#4a3a26] to-[#2c2318]",
+  "from-[#26333c] to-[#1a232a]",
+  "from-[#3a2c45] to-[#241b2c]",
+  "from-[#2b4033] to-[#1a2820]",
 ];
 
-export default function Featured({ studios = STUDIOS }) {
+export default function Featured() {
+  const { products } = useContext(ProductContext);
+  const featured = products.slice(0, 4);
+
   return (
     <section className="">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
-        <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Featured studios</h2>
-        <p className="mt-2 text-sm text-neutral-400">Sample listings for the concept.</p>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Featured studios</h2>
+          <Link
+            href="/explore"
+            className="shrink-0 text-sm font-medium text-amber-400 transition hover:text-amber-300"
+          >
+            See all
+          </Link>
+        </div>
+        <p className="mt-2 text-sm text-neutral-400">Handpicked spaces from our community.</p>
 
         <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {studios.map((s) => (
-            <li key={s.id}>
+          {featured.map((s, i) => (
+            <li key={s._id ?? i}>
               <Link
-                href={`/studios/${s.id}`}
+                href={`/studios/${s._id ?? s.id}`}
                 className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 transition duration-300 hover:-translate-y-1 hover:border-amber-400/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
               >
                 {/* image area */}
                 <div
-                  className={`relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br ${s.gradient}`}
+                  className={`relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`}
                 >
-                  {/* <Image src={s.image} alt={s.name} fill className="object-cover transition duration-500 group-hover:scale-105" /> */}
+                  {(s.imageURL ?? s.imageUrl) && (
+                    <Image
+                      src={s.imageURL ?? s.imageUrl}
+                      alt={s.title}
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  )}
                   <span className="absolute bottom-3 left-4 text-[10px] font-semibold uppercase tracking-wider text-amber-300/90">
-                    {s.tag}
+                    {s.amenities?.[0] ?? s.category}
                   </span>
                 </div>
 
@@ -86,11 +61,15 @@ export default function Featured({ studios = STUDIOS }) {
                     {s.category}
                   </span>
 
-                  <h3 className="mt-3 text-base font-bold leading-tight text-white">{s.name}</h3>
-                  <p className="mt-1 text-xs text-neutral-400">{s.meta}</p>
+                  <h3 className="mt-3 text-base font-bold leading-tight text-white">{s.title}</h3>
+                  <p className="mt-1 text-xs text-neutral-400">
+                    {[s.location, s.maxCapacity && `${s.maxCapacity} guests`]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
 
                   <p className="mt-auto pt-3 text-sm">
-                    <span className="font-bold text-white">${s.price}</span>
+                    <span className="font-bold text-white">${s.hourlyRate}</span>
                     <span className="text-neutral-400"> / hour</span>
                   </p>
                 </div>

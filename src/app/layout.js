@@ -1,5 +1,6 @@
 import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
+import { ProductProvider } from "@/context/productContext";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -24,7 +25,9 @@ export default function RootLayout({ children }) {
       className={`${roboto.variable} ${robotoMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {children}
+        <ProductProvider>
+          {children}
+        </ProductProvider>
       </body>
     </html>
   );
