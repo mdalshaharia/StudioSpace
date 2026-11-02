@@ -5,16 +5,11 @@ import ProductContext from "@/context/productContext";
 import Link from "next/link";
 import Image from "next/image";
 
-const GRADIENTS = [
-  "from-[#4a3a26] to-[#2c2318]",
-  "from-[#26333c] to-[#1a232a]",
-  "from-[#3a2c45] to-[#241b2c]",
-  "from-[#2b4033] to-[#1a2820]",
-];
-
 export default function Featured() {
   const { products } = useContext(ProductContext);
-  const featured = products.slice(0, 4);
+  const featured = [...products]
+    .sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0))
+    .slice(0, 6);
 
   return (
     <section className="">
@@ -30,16 +25,16 @@ export default function Featured() {
         </div>
         <p className="mt-2 text-sm text-neutral-400">Handpicked spaces from our community.</p>
 
-        <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((s, i) => (
-            <li key={s._id ?? i}>
+            <li key={i}>
               <Link
-                href={`/studios/${s._id ?? s.id}`}
-                className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 transition duration-300 hover:-translate-y-1 hover:border-amber-400/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
+                href={`/studios/${s._id}`}
+                className="group flex h-full flex-col overflow-hidden rounded-2xl bg-neutral-900 shadow-lg shadow-black/20 transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
               >
                 {/* image area */}
                 <div
-                  className={`relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`}
+                  className={`relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br`}
                 >
                   {(s.imageURL ?? s.imageUrl) && (
                     <Image
@@ -68,9 +63,16 @@ export default function Featured() {
                       .join(" · ")}
                   </p>
 
-                  <p className="mt-auto pt-3 text-sm">
-                    <span className="font-bold text-white">${s.hourlyRate}</span>
-                    <span className="text-neutral-400"> / hour</span>
+                  <p className="mt-auto flex items-center justify-between gap-3 pt-3 text-sm">
+                    <span>
+                      <span className="font-bold text-white">${s.hourlyRate}</span>
+                      <span className="text-neutral-400"> / hour</span>
+                    </span>
+                    {s.rating != null && (
+                      <span className="font-semibold text-amber-400">
+                        ★ {Number(s.rating).toFixed(1)}
+                      </span>
+                    )}
                   </p>
                 </div>
               </Link>

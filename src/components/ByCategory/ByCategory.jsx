@@ -5,33 +5,6 @@ import Link from "next/link";
 import { useContext, useRef } from "react";
 import Image from "next/image";
 
-const STUDIO_TYPES = [
-  {
-    slug: "photography-cyc-walls",
-    label: "Photography cyc walls",
-    gradient: "from-[#2a2118] to-[#16130f]",
-  },
-  {
-    slug: "film-and-sound-stages",
-    label: "Film and sound stages",
-    gradient: "from-[#1b2a33] to-[#12181d]",
-  },
-  {
-    slug: "music-recording-suites",
-    label: "Music recording suites",
-    gradient: "from-[#2d2236] to-[#1a141f]",
-  },
-  {
-    slug: "podcast-lounges",
-    label: "Podcast lounges",
-    gradient: "from-[#1c2b21] to-[#121a15]",
-  },
-  {
-    slug: "art-workshops",
-    label: "Art workshops",
-    gradient: "from-[#33231c] to-[#1d1511]",
-  },
-];
 
 export default function ByCategory() {
   const { products, loading } = useContext(ProductContext)
