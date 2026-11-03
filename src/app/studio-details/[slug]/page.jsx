@@ -1,5 +1,6 @@
 'use client'
-// import { useState } from "react";
+
+import { useState, useEffect, use } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +8,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { getTokenFromClient } from "@/app/lib/getTokenFromClient";
+import { useSession } from "@/app/lib/auth-client";
+import BookingButton from "./BookingButton";
 
 const Stars = ({ value = 0 }) => (
   <span className="flex" aria-label={`${value} out of 5`}>
@@ -19,25 +23,42 @@ const Stars = ({ value = 0 }) => (
   </span>
 );
 
-const StudioDetails = async ({ params }) => {
-  const { slug } = await params
-  let product = null
+const StudioDetails = ({ params }) => {
+  // Unwrap params using React.use() for Client Components in Next.js
+  const { slug } = use(params);
+  // const { data: session, isPending } = useSession();
 
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${slug}`)
-    if (res.ok) {
-      product = await res.json()
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStudio() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setProduct(data); // Properly update state with fetched data
+        }
+      } catch (err) {
+        console.error('Failed to fetch product:', err);
+      } finally {
+        setLoading(false);
+      }
     }
-  } catch (err) {
-    console.error('Failed to fetch product:', err)
-  }
-  if (product === null) {
-    return <EmptyState message="দুঃখিত, পণ্যটি পাওয়া যায়নি।" />
+    fetchStudio();
+  }, [slug]);
+
+  // Show loading state while fetching
+  if (loading) {
+    return <div className="p-6 text-center">Loading studio details...</div>;
   }
 
-  const handleBooking = () => {
-    console.log('booked')
+  // Handle product not found
+  if (!product) {
+    return <div className="p-6 text-center text-red-500">দুঃখিত, পণ্যটি পাওয়া যায়নি।</div>;
   }
+
+  // Destructure safely *after* confirming product exists
   const {
     title,
     category,
@@ -56,7 +77,6 @@ const StudioDetails = async ({ params }) => {
   } = product;
 
   const images = [imageUrl, ...gallery].filter(Boolean);
-  
 
   return (
     <main className="bg-neutral-950 text-white">
@@ -102,9 +122,9 @@ const StudioDetails = async ({ params }) => {
                       key={src + i}
                       // onClick={() => setIndex(i)}
                       aria-label={`Show image ${i + 1}`}
-                      // aria-current={i === index}
-                      // className={`aspect-[16/10] overflow-hidden rounded-lg border-2 transition ${i === index ? "border-amber-400" : "border-transparent opacity-70 hover:opacity-100"
-                      //   }`}
+                    // aria-current={i === index}
+                    // className={`aspect-[16/10] overflow-hidden rounded-lg border-2 transition ${i === index ? "border-amber-400" : "border-transparent opacity-70 hover:opacity-100"
+                    //   }`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -219,13 +239,7 @@ const StudioDetails = async ({ params }) => {
               </dl>
 
               <Separator className="my-4 bg-white/10" />
-
-              <Button
-                onClick={handleBooking}
-                className="h-11 w-full rounded-xl bg-amber-400 font-semibold text-neutral-900 hover:bg-amber-300"
-              >
-                Book Workspace Now
-              </Button>
+              <BookingButton product={product} />
               <p className="mt-3 text-center text-[11px] text-neutral-400">
                 Opens the booking window. Status starts as Pending.
               </p>

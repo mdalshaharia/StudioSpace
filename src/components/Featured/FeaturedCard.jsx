@@ -6,7 +6,7 @@ export default function FeaturedCard({ studio }) {
 
   return (
     <Link
-      href={`/studios/${studio._id}`}
+      href={`/studio-details/${studio._id}`}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/90 shadow-xl transition duration-300 hover:-translate-y-1 hover:border-amber-400/40 hover:shadow-2xl hover:shadow-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/70"
     >
       {/* image area */}
