@@ -1,36 +1,14 @@
-"use client";
-
-/**
- * StudioSpace – My studio listings
- * Place at: app/my-listings/page.jsx  (this is the redirect target after "Add Studio")
- *
- * Stack: Next.js (App Router) + Tailwind + shadcn/ui (Table, Button, AlertDialog)
- *        + sonner toasts + Firebase Auth
- *
- * API (Express + MongoDB) – env: NEXT_PUBLIC_API_URL
- *   GET    {API}/studios/mine       -> [{ _id, title, category, hourlyRate, location, imageURL }]
- *   DELETE {API}/studios/:id
- *   (both send  Authorization: Bearer <firebase id token>;
- *    /studios/mine should filter by the verified token's uid/email)
- *
- * Update button links to /dashboard/studios/:id/edit – change EDIT_ROUTE if needed.
- */
-
-import { useCallback, useEffect, useState } from "react";
+'use client'
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Building2 } from "lucide-react";
+// import { auth } from "@/lib/auth";
+// import { headers } from "next/headers";
 
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +19,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useSession } from "../lib/auth-client";
+// import { getTokenFromServer } from "../lib/getTokenFromServer";
+import { getTokenFromClient } from "../lib/getTokenFromClient";
+import ProductContext from "@/context/productContext";
+import ListingCard from "@/components/Card/ListingCard/ListingCard";
 
 /* ------------------------------ config ------------------------------ */
 
@@ -51,53 +34,68 @@ const EDIT_ROUTE = (id) => `/dashboard/studios/${id}/edit`;
 /* ------------------------------- page -------------------------------- */
 
 export default function MyListingsPage() {
+  //  const session = await auth.api.getSession({ headers: await headers() });
+  // console.log(session)
+
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [studios, setStudios] = useState([]);
   const [status, setStatus] = useState("loading"); // loading | ready | error
   const [toDelete, setToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [listings, setListings] = useState([])
+  const [loading, setLoading] = useState(false);
+  const { data: session, isPending } = useSession();
+   const { products = [], error } = useContext(ProductContext);
+ 
 
+   const filteredProducts = useMemo(
+  () => products.filter((product) =>
+    listings.some((listing) => listing?.productId === product?._id)
+  ),
+  [products, listings],
+);
   /* auth guard */
 
   /* fetch listings */
-  const load = useCallback(async (u) => {
-    setStatus("loading");
-    try {
-      const token = await u.getIdToken();
-      const res = await fetch(`${API_URL}/studios/mine`, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error();
-      setStudios(await res.json());
-      setStatus("ready");
-    } catch {
-      setStatus("error");
-      toast.error("Could not load your listings.");
+  useEffect(() => {
+    async function fetchData() {
+      // const token = await getTokenFromServer()
+      const token = await getTokenFromClient()
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${session.user.id}`, {
+          cache: "no-store",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setListings(data);
+          setStudios(data)
+          setStatus("ready");
+        }
+      } catch (err) {
+        console.error('Failed to fetch product:', err);
+      } finally {
+        // setLoading(false);
+        
+      }
     }
-  }, []);
+    fetchData();
+  }, [session]);
+
+  console.log(listings)
 
 
   /* delete */
-  const confirmDelete = async () => {
-    if (!toDelete) return;
-    setDeleting(true);
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch(`${API_URL}/studios/${toDelete._id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error();
-      setStudios((prev) => prev.filter((s) => s._id !== toDelete._id));
-      toast.success(`“${toDelete.title}” was deleted.`);
-      setToDelete(null);
-    } catch {
-      toast.error("Could not delete the studio. Please try again.");
-    } finally {
-      setDeleting(false);
-    }
+  const confirmDelete = async (productId) => {
+    console.log(productId)
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${productId}`, {
+        method:'DELETE'
+    })
+    const data = await res.json() 
+    console.log(data)
   };
 
   return (
@@ -123,7 +121,7 @@ export default function MyListingsPage() {
 
         {/* body */}
         <div className="mt-6">
-          {status === "loading" && <LoadingState />}
+          {/* {status === "loading" && <LoadingState />} */}
 
           {status === "error" && (
             <EmptyState
@@ -157,56 +155,17 @@ export default function MyListingsPage() {
 
           {status === "ready" && studios.length > 0 && (
             <>
-              {/* ---------- desktop / tablet: table ---------- */}
-              <div className="hidden overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="border-white/10 hover:bg-transparent">
-                      {["Studio", "Category", "Rate", "Location", "Actions"].map((h) => (
-                        <TableHead
-                          key={h}
-                          className="h-12 text-xs font-semibold text-neutral-400"
-                        >
-                          {h}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {studios.map((s) => (
-                      <TableRow key={s._id} className="border-white/5 hover:bg-white/[0.02]">
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Thumb src={s.imageURL} alt={s.title} />
-                            <span className="font-bold">{s.title}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <CategoryPill>{s.category}</CategoryPill>
-                        </TableCell>
-                        <TableCell className="font-bold">${s.hourlyRate}/hr</TableCell>
-                        <TableCell className="text-neutral-400">{s.location}</TableCell>
-                        <TableCell>
-                          <RowActions
-                            id={s._id}
-                            onDelete={() => setToDelete(s)}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+            <ListingCard filteredProducts={filteredProducts} confirmDelete={confirmDelete} ></ListingCard>
 
               {/* ---------- mobile: cards ---------- */}
               <ul className="space-y-3 md:hidden">
-                {studios.map((s) => (
+                {filteredProducts.map((s) => (
                   <li
                     key={s._id}
                     className="rounded-2xl border border-white/10 bg-neutral-900 p-4"
                   >
                     <div className="flex items-center gap-3">
-                      <Thumb src={s.imageURL} alt={s.title} />
+                      <Thumb src={s.imageUrl} alt={s.title} />
                       <div className="min-w-0">
                         <p className="truncate font-bold">{s.title}</p>
                         <p className="text-sm text-neutral-400">
@@ -227,7 +186,7 @@ export default function MyListingsPage() {
       </div>
 
       {/* delete confirmation */}
-      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && !deleting && setToDelete(null)}>
+      {/* <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && !deleting && setToDelete(null)}>
         <AlertDialogContent className="border-white/10 bg-neutral-900 text-white">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this studio?</AlertDialogTitle>
@@ -261,7 +220,7 @@ export default function MyListingsPage() {
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog>
+      </AlertDialog> */}
     </main>
   );
 }

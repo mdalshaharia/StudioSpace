@@ -34,10 +34,12 @@ const StudioDetails = ({ params }) => {
   useEffect(() => {
     async function fetchStudio() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${slug}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${slug}`, {
+          cache: "no-store",
+        });
         if (res.ok) {
           const data = await res.json();
-          setProduct(data); // Properly update state with fetched data
+          setProduct(data);
         }
       } catch (err) {
         console.error('Failed to fetch product:', err);

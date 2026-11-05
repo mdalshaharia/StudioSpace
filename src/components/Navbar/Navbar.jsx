@@ -38,7 +38,7 @@ import Image from "next/image";
 const NAV_LINKS = [
   { label: "Explore", href: "/explore-studio" },
   { label: "How it works", href: "/how-it-works" },
-  { label: "List your space", href: "/list-your-space" },
+  { label: "List your space", href: "/my-listings" },
   { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
