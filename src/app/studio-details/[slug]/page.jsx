@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, Suspense } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -8,9 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { getTokenFromClient } from "@/app/lib/getTokenFromClient";
 import { useSession } from "@/app/lib/auth-client";
-import BookingButton from "./BookingButton";
+import BookingModal from "@/components/Modal/BookingModal";
 
 const Stars = ({ value = 0 }) => (
   <span className="flex" aria-label={`${value} out of 5`}>
@@ -23,13 +22,28 @@ const Stars = ({ value = 0 }) => (
   </span>
 );
 
-const StudioDetails = ({ params }) => {
+export default function StudioDetailsPage({ params }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[60vh] items-center justify-center bg-neutral-950 text-white">
+          <p className="text-sm text-neutral-400">Loading studio details...</p>
+        </div>
+      }
+    >
+      <StudioDetails params={params} />
+    </Suspense>
+  );
+}
+
+function StudioDetails({ params }) {
   // Unwrap params using React.use() for Client Components in Next.js
   const { slug } = use(params);
-  // const { data: session, isPending } = useSession();
+  const { data: session, isPending } = useSession();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     async function fetchStudio() {
@@ -89,29 +103,21 @@ const StudioDetails = ({ params }) => {
           {images.length > 0 && (
             <>
               <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
-                {/* <img
-                  src={images[index]}
-                  alt={`${title} – image ${index + 1}`}
-                  className="h-full w-full object-cover"
-                /> */}
                 {images.length > 1 && (
                   <>
                     <button
-                      // onClick={() => go(-1)}
                       aria-label="Previous image"
                       className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-neutral-950/80 text-white backdrop-blur hover:bg-neutral-950"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
                     <button
-                      // onClick={() => go(1)}
                       aria-label="Next image"
                       className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-neutral-950/80 text-white backdrop-blur hover:bg-neutral-950"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </button>
                     <span className="absolute bottom-3 left-4 text-[10px] font-semibold uppercase tracking-wider text-white/90">
-                      {/* Gallery image {index + 1} of {images.length} */}
                     </span>
                   </>
                 )}
@@ -122,11 +128,7 @@ const StudioDetails = ({ params }) => {
                   {images.map((src, i) => (
                     <button
                       key={src + i}
-                      // onClick={() => setIndex(i)}
                       aria-label={`Show image ${i + 1}`}
-                    // aria-current={i === index}
-                    // className={`aspect-[16/10] overflow-hidden rounded-lg border-2 transition ${i === index ? "border-amber-400" : "border-transparent opacity-70 hover:opacity-100"
-                    //   }`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
@@ -225,6 +227,10 @@ const StudioDetails = ({ params }) => {
           </Section>
         </div>
 
+        {open && (
+          <BookingModal open={open} studio={product} onOpenChange={setOpen} />
+        )}
+
         {/* ============================ right: booking card ============================ */}
         <aside className="lg:sticky lg:top-24">
           <Card className="border-white/10 bg-neutral-900 py-0 text-white">
@@ -241,7 +247,13 @@ const StudioDetails = ({ params }) => {
               </dl>
 
               <Separator className="my-4 bg-white/10" />
-              <BookingButton product={product} />
+              <Button
+                onClick={() => setOpen(true)}
+                disabled={loading || isPending}
+                className="h-11 w-full rounded-xl bg-amber-400 font-semibold text-neutral-900 hover:bg-amber-300 disabled:opacity-50"
+              >
+                {loading ? "Processing..." : "Book Workspace Now"}
+              </Button>
               <p className="mt-3 text-center text-[11px] text-neutral-400">
                 Opens the booking window. Status starts as Pending.
               </p>
@@ -281,5 +293,3 @@ function Row({ label, value }) {
     </div>
   );
 }
-
-export default StudioDetails;

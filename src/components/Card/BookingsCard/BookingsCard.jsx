@@ -23,8 +23,13 @@ const STATUS_NOTE = {
   Cancelled: "No action",
 };
 
-export const formatDate = (d) =>
-  new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+export const formatDate = (d) => {
+  if (!d) return "—";
+  const dateObj = new Date(d);
+  return isNaN(dateObj.getTime())
+    ? "—"
+    : dateObj.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+};
 
 const BookingsCard = ({ bookings, onCancel, onConfirm, confirming }) => {
     return (
@@ -43,11 +48,11 @@ const BookingsCard = ({ bookings, onCancel, onConfirm, confirming }) => {
                     <TableRow key={b._id} className="border-white/5 hover:bg-white/[0.02]">
                         <TableCell>
                             <div className="flex items-center gap-3">
-                                {b.studioImage ? (
+                                {b.studioImage || b.productImage ? (
                                     // plain <img> so any image host works without next.config changes
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
-                                        src={b.studioImage}
+                                        src={b.studioImage || b.productImage}
                                         alt=""
                                         loading="lazy"
                                         className="h-10 w-10 shrink-0 rounded-lg border border-white/10 object-cover"
@@ -55,14 +60,14 @@ const BookingsCard = ({ bookings, onCancel, onConfirm, confirming }) => {
                                 ) : (
                                     <span className="h-10 w-10 shrink-0 rounded-lg bg-gradient-to-br from-[#4a3a26] to-[#2c2318]" />
                                 )}
-                                <span className="font-bold">{b.studioTitle}</span>
+                                <span className="font-bold">{b.studioTitle || b.productName || "Studio"}</span>
                             </div>
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">{formatDate(b.date)}</TableCell>
+                        <TableCell className="whitespace-nowrap">{formatDate(b.date || b.BookingDate)}</TableCell>
                         <TableCell className="whitespace-nowrap">
-                            {b.startTime} to {b.endTime}
+                            {b.startTime && b.endTime ? `${b.startTime} to ${b.endTime}` : (b.startTime || "Standard slot")}
                         </TableCell>
-                        <TableCell className="font-medium">${b.total}</TableCell>
+                        <TableCell className="font-medium">${b.total ?? 0}</TableCell>
                         <TableCell>
                             <div className="flex flex-col items-start gap-0.5">
                                 {b.status === "Pending" ? (

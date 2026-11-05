@@ -36,6 +36,7 @@ export default function MyBookingsPage() {
   const [cancelling, setCancelling] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
+
   // redirect if signed out
   // useEffect(() => {
   //   if (!isPending && !session) router.replace("/login?redirect=/dashboard/bookings");
@@ -164,7 +165,7 @@ export default function MyBookingsPage() {
             <AlertDialogTitle>Cancel this booking?</AlertDialogTitle>
             <AlertDialogDescription className="text-neutral-400">
               {target &&
-                `${target.studioTitle} on ${formatDate(target.date)}, ${target.startTime} to ${target.endTime}.`}
+                `${target.studioTitle || target.productName || "Studio"} on ${formatDate(target.date || target.BookingDate)}, ${target.startTime || ""} to ${target.endTime || ""}.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
