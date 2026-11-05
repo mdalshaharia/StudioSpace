@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-// import { onAuthStateChanged } from "firebase/auth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,12 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// import { auth } from "@/lib/firebase";
+import { useSession } from "../lib/auth-client";
+import { getTokenFromClient } from "../lib/getTokenFromClient";
 
 /* ------------------------------ config ------------------------------ */
 
 const LISTINGS_ROUTE = "/my-listings";
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const CATEGORIES = [
   "Photography cyc wall",
@@ -51,7 +50,8 @@ const EMPTY = {
   securityDeposit: "",
   maxCapacity: "",
   location: "",
-  imageURL: "",
+  imageUrl: "",
+  gallery: [],
   amenities: [],
   overview: "",
 };
@@ -70,30 +70,77 @@ const inputCls =
 
 /* ------------------------------- page -------------------------------- */
 
+function LoaderScreen() {
+  return (
+    <main className="grid min-h-[60vh] place-items-center bg-white">
+      <Loader2 className="h-6 w-6 animate-spin text-amber-500" aria-label="Loading" />
+    </main>
+  );
+}
+
 export default function AddStudioPage() {
+  return (
+    <Suspense fallback={<LoaderScreen />}>
+      <AddStudioForm />
+    </Suspense>
+  );
+}
+
+function AddStudioForm() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [authReady, setAuthReady] = useState(false);
+  const studioId = useSearchParams().get("studioId");
+  const isEdit = !!studioId;
+
+  const { data: session, isPending } = useSession();
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [loadingStudio, setLoadingStudio] = useState(isEdit);
 
-  // auth guard + host info
-//   useEffect(() => {
-//     const unsub = onAuthStateChanged(auth, (u) => {
-//       if (!u) {
-//         router.replace("/login?redirect=/dashboard/studios/new");
-//         return;
-//       }
-//       setUser(u);
-//       setAuthReady(true);
-//     });
-//     return unsub;
-//   }, [router]);
+  // auth guard
+  useEffect(() => {
+    if (!isPending && !session?.user) router.replace("/signin?redirect=/my-listings");
+  }, [isPending, session, router]);
 
-  const set = (key) => (e) => {
-    setForm((p) => ({ ...p, [key]: e.target.value }));
-    if (errors[key]) setErrors((p) => ({ ...p, [key]: undefined }));
+  // prefill form when editing an existing studio
+  useEffect(() => {
+    if (isPending || !session?.user || !isEdit) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error();
+        const s = await res.json();
+        if (!cancelled) {
+          setForm({
+            title: s.title ?? "",
+            category: s.category ?? "",
+            hourlyRate: s.hourlyRate != null ? String(s.hourlyRate) : "",
+            securityDeposit: s.securityDeposit != null ? String(s.securityDeposit) : "",
+            maxCapacity: s.maxCapacity != null ? String(s.maxCapacity) : "",
+            location: s.location ?? "",
+            imageUrl: s.imageUrl ?? "",
+            gallery: s.gallery ?? [],
+            amenities: s.amenities ?? [],
+            overview: s.overview ?? "",
+          });
+        }
+      } catch {
+        if (!cancelled) toast.error("Could not load the studio to edit.");
+      } finally {
+        if (!cancelled) setLoadingStudio(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isPending, session, isEdit, studioId]);
+
+  const updateField = (name) => (e) => {
+    setForm((prev) => ({ ...prev, [name]: e.target.value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const toggleAmenity = (name, checked) =>
@@ -111,8 +158,10 @@ export default function AddStudioPage() {
       n.securityDeposit = "Enter a deposit (0 or more).";
     if (!(Number(form.maxCapacity) >= 1)) n.maxCapacity = "Capacity must be at least 1.";
     if (form.location.trim().length < 3) n.location = "Enter the location / address.";
-    if (!form.imageURL.trim()) n.imageURL = "Image URL is required.";
-    else if (!isUrl(form.imageURL.trim())) n.imageURL = "Enter a valid image URL (https://…).";
+    if (!form.imageUrl.trim()) n.imageUrl = "Image URL is required.";
+    else if (!isUrl(form.imageUrl.trim())) n.imageUrl = "Enter a valid image URL (https://…).";
+    const badGallery = form.gallery.filter((g) => !isUrl(g.trim()));
+    if (badGallery.length) n.gallery = "Gallery entries must be valid URLs (comma-separated).";
     if (form.overview.trim().length < 20) n.overview = "Write at least 20 characters.";
     setErrors(n);
     return Object.keys(n).length === 0;
@@ -129,60 +178,102 @@ export default function AddStudioPage() {
       toast.error("Please fix the highlighted fields.");
       return;
     }
-
+    
     setSubmitting(true);
+    let createdStudio = null;
+    let token = null;
+    let payload = null;
     try {
-      const token = await user.getIdToken();
-      const payload = {
+      token = await getTokenFromClient();
+      payload = {
         title: form.title.trim(),
         category: form.category,
         hourlyRate: Number(form.hourlyRate),
         securityDeposit: Number(form.securityDeposit),
         maxCapacity: Number(form.maxCapacity),
         location: form.location.trim(),
-        imageURL: form.imageURL.trim(),
+        imageUrl: form.imageUrl.trim(),
+        gallery: form.gallery,
         amenities: form.amenities,
         overview: form.overview.trim(),
-        hostName: user.displayName ?? "",
-        hostEmail: user.email ?? "",
-        hostUid: user.uid,
+        rating: 4.6,
+        reviews: [],
+        ownerName: session?.user?.name ?? "",
+        ownerEmail: session?.user?.email ?? "",
+        ownerId: session?.user?.id ?? "",
+        status: "active",
         createdAt: new Date().toISOString(),
       };
 
-    //   const res = await fetch(`${API_URL}/studios`, {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //       Authorization: `Bearer ${token}`,
-    //     },
-    //     body: JSON.stringify(payload),
-    //   });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
+      // step 1: save or update the studio
+      const studioRes = await fetch(
+        isEdit
+          ? `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}`
+          : `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios`,
+        {
+          method: isEdit ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+      if (!studioRes.ok) {
+        const data = await studioRes.json().catch(() => ({}));
         throw new Error(data.message || "Could not save the studio.");
       }
-
-      toast.success("Studio added successfully!");
-      router.push(LISTINGS_ROUTE);
+      createdStudio = await studioRes.json();
     } catch (err) {
       toast.error(err.message || "Something went wrong. Please try again.");
       setSubmitting(false);
+      return;
     }
+
+    if (!isEdit) {
+      // link newly created studio to the owner's listings
+      try {
+        const myListingRes = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ ownerId: payload.ownerId, productId: createdStudio.insertedId }),
+        });
+        if (!myListingRes.ok) {
+          // roll back the studio so it isn't silently orphaned
+          await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${createdStudio.insertedId}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          }).catch(() => {});
+          const data = await myListingRes.json().catch(() => ({}));
+          throw new Error(data.message || "Could not link the studio to your listings.");
+        }
+      } catch (err) {
+        toast.error(err.message || "Something went wrong. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    console.log("res from my-listings:", createdStudio);
+    console.log("res from stdio:", createdStudio);
+    toast.success(isEdit ? "Studio updated successfully!" : "Studio added successfully!");
+    setSubmitting(false);
+    router.push(LISTINGS_ROUTE);
   };
 
-//   if (!authReady) {
-//     return (
-//       <main className="grid min-h-[60vh] place-items-center bg-white">
-//         <Loader2 className="h-6 w-6 animate-spin text-amber-500" aria-label="Loading" />
-//       </main>
-//     );
-//   }
+  if (isPending || !session?.user || loadingStudio) {
+    return <LoaderScreen />;
+  }
 
   return (
     <main className="bg-white text-neutral-900">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <h1 className="text-3xl font-extrabold tracking-tight">Add a new studio</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">
+          {isEdit ? "Update your studio" : "Add a new studio"}
+        </h1>
         <p className="mt-1 text-sm text-neutral-500">Tell creators about your space.</p>
 
         <form
@@ -197,7 +288,7 @@ export default function AddStudioPage() {
                 id="title"
                 placeholder="e.g. Skyline Photo Studio"
                 value={form.title}
-                onChange={set("title")}
+                onChange={updateField("title")}
                 disabled={submitting}
                 aria-invalid={!!errors.title}
                 className={inputCls}
@@ -242,7 +333,7 @@ export default function AddStudioPage() {
                 inputMode="decimal"
                 placeholder="60"
                 value={form.hourlyRate}
-                onChange={set("hourlyRate")}
+                onChange={updateField("hourlyRate")}
                 disabled={submitting}
                 aria-invalid={!!errors.hourlyRate}
                 className={inputCls}
@@ -258,7 +349,7 @@ export default function AddStudioPage() {
                 inputMode="decimal"
                 placeholder="100"
                 value={form.securityDeposit}
-                onChange={set("securityDeposit")}
+                onChange={updateField("securityDeposit")}
                 disabled={submitting}
                 aria-invalid={!!errors.securityDeposit}
                 className={inputCls}
@@ -277,7 +368,7 @@ export default function AddStudioPage() {
                 inputMode="numeric"
                 placeholder="12"
                 value={form.maxCapacity}
-                onChange={set("maxCapacity")}
+                onChange={updateField("maxCapacity")}
                 disabled={submitting}
                 aria-invalid={!!errors.maxCapacity}
                 className={inputCls}
@@ -289,7 +380,7 @@ export default function AddStudioPage() {
                 id="location"
                 placeholder="Street, area, city"
                 value={form.location}
-                onChange={set("location")}
+                onChange={updateField("location")}
                 disabled={submitting}
                 aria-invalid={!!errors.location}
                 className={inputCls}
@@ -298,16 +389,39 @@ export default function AddStudioPage() {
           </div>
 
           {/* image */}
-          <Field id="imageURL" label="Image URL" error={errors.imageURL}>
+          <Field id="imageUrl" label="Image URL" error={errors.imageUrl}>
             <Input
-              id="imageURL"
+              id="imageUrl"
               type="url"
               inputMode="url"
               placeholder="https://…"
-              value={form.imageURL}
-              onChange={set("imageURL")}
+              value={form.imageUrl}
+              onChange={updateField("imageUrl")}
               disabled={submitting}
-              aria-invalid={!!errors.imageURL}
+              aria-invalid={!!errors.imageUrl}
+              className={inputCls}
+            />
+          </Field>
+
+          {/* gallery */}
+          <Field id="gallery" label="Gallery image URLs (optional, comma-separated)" error={errors.gallery}>
+            <Input
+              id="gallery"
+              type="url"
+              inputMode="url"
+              placeholder="https://…, https://…"
+              value={form.gallery.join(", ")}
+              onChange={(e) =>
+                setForm((p) => ({
+                  ...p,
+                  gallery: e.target.value
+                    .split(",")
+                    .map((g) => g.trim())
+                    .filter(Boolean),
+                }))
+              }
+              disabled={submitting}
+              aria-invalid={!!errors.gallery}
               className={inputCls}
             />
           </Field>
@@ -350,28 +464,28 @@ export default function AddStudioPage() {
               rows={5}
               placeholder="Describe the space, equipment, house rules…"
               value={form.overview}
-              onChange={set("overview")}
+              onChange={updateField("overview")}
               disabled={submitting}
               aria-invalid={!!errors.overview}
               className="rounded-xl border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-amber-500/50"
             />
           </Field>
 
-          {/* host (read-only) */}
+          {/* owner (read-only) */}
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field id="hostName" label="Host name (read-only)">
+            <Field id="ownerName" label="Owner name (read-only)">
               <Input
-                id="hostName"
+                id="ownerName"
                 readOnly
-                value={user?.displayName ?? ""}
+                value={session?.user?.name ?? ""}
                 className={`${inputCls} cursor-not-allowed bg-neutral-100 text-neutral-600`}
               />
             </Field>
-            <Field id="hostEmail" label="Host email (read-only)">
+            <Field id="ownerEmail" label="Owner email (read-only)">
               <Input
-                id="hostEmail"
+                id="ownerEmail"
                 readOnly
-                value={user?.email ?? ""}
+                value={session?.user?.email ?? ""}
                 className={`${inputCls} cursor-not-allowed bg-neutral-100 text-neutral-600`}
               />
             </Field>
@@ -386,8 +500,10 @@ export default function AddStudioPage() {
             >
               {submitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding…
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…
                 </>
+              ) : isEdit ? (
+                "Save Changes"
               ) : (
                 "Add Studio"
               )}

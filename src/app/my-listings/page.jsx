@@ -28,8 +28,8 @@ import ListingCard from "@/components/Card/ListingCard/ListingCard";
 /* ------------------------------ config ------------------------------ */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const ADD_ROUTE = "/dashboard/studios/new";
-const EDIT_ROUTE = (id) => `/dashboard/studios/${id}/edit`;
+const ADD_ROUTE = "/add-studio";
+const EDIT_ROUTE = (id) => `/add-studio?studioId=${id}`;
 
 /* ------------------------------- page -------------------------------- */
 
@@ -48,49 +48,55 @@ export default function MyListingsPage() {
   const { data: session, isPending } = useSession();
    const { products = [], error } = useContext(ProductContext);
  
-
-   const filteredProducts = useMemo(
-  () => products.filter((product) =>
-    listings.some((listing) => listing?.productId === product?._id)
-  ),
-  [products, listings],
-);
   /* auth guard */
 
   /* fetch listings */
-  useEffect(() => {
+
+useEffect(() => {
     async function fetchData() {
-      // const token = await getTokenFromServer()
-      const token = await getTokenFromClient()
+      // Guard clause: Don't fetch if the user session isn't loaded yet
+      if (!session?.user?.id) return;
+
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${session.user.id}`, {
+        const token = await getTokenFromClient();
+        
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings/${session.user.id}`, {
           cache: "no-store",
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
+
         if (res.ok) {
-          const data = await res.json();
-          setListings(data);
-          setStudios(data)
-          setStatus("ready");
+          const resData = await res.json();
+          console.log('response data :', resData);
+
+          // 1. Create a Set of IDs from the response data for instant O(1) lookups
+          // (Using p.productId or p._id depending on how your backend structures the response)
+          const resIds = new Set(resData.map((p) => p.productId || p._id));
+
+          // 2. Safely filter products using .has() instead of an array-to-string comparison
+          const filteredData = products.filter((d) => resIds.has(d._id));
+          
+          console.log("Filtered data:", filteredData);
+          setListings(filteredData);
         }
       } catch (err) {
         console.error('Failed to fetch product:', err);
       } finally {
-        // setLoading(false);
-        
+        setLoading(false);
       }
     }
-    fetchData();
-  }, [session]);
 
-  console.log(listings)
+    fetchData();
+  }, [session, products]);
+
+  // console.log(products)
 
 
   /* delete */
   const confirmDelete = async (productId) => {
-    console.log(productId)
+    // console.log(productId)
     setDeleting(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${productId}`, {
@@ -164,13 +170,13 @@ export default function MyListingsPage() {
             />
           )}
 
-          {status === "ready" && studios.length > 0 && (
+          {listings.length > 0 && (
             <>
-            <ListingCard filteredProducts={filteredProducts} confirmDelete={confirmDelete} ></ListingCard>
+            <ListingCard products={listings} confirmDelete={confirmDelete} ></ListingCard>
 
               {/* ---------- mobile: cards ---------- */}
               <ul className="space-y-3 md:hidden">
-                {filteredProducts.map((s) => (
+                {listings.map((s) => (
                   <li
                     key={s._id}
                     className="rounded-2xl border border-white/10 bg-neutral-900 p-4"

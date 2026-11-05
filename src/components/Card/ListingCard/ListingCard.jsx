@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/table";
 import Link from 'next/link';
 
-const EDIT_ROUTE = (id) => `/dashboard/studios/${id}/edit`;
-const ListingCard = ({filteredProducts, confirmDelete}) => {
+const EDIT_ROUTE = (id) => `/add-studio?studioId=${id}`;
+const ListingCard = ({products, confirmDelete}) => {
     return (
         <div className="hidden overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 md:block">
             <Table>
@@ -28,7 +28,7 @@ const ListingCard = ({filteredProducts, confirmDelete}) => {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {filteredProducts.map((s) => (
+                    {products.map((s) => (
                         <TableRow key={s._id} className="border-white/5 hover:bg-white/[0.02]">
                             <TableCell>
                                 <div className="flex items-center gap-3">

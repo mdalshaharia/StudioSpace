@@ -45,10 +45,10 @@ const NAV_LINKS = [
 ];
 
 const USER_MENU = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Add New Studio", href: "/dashboard/studios/new", icon: PlusSquare },
-  { label: "My Studio Listings", href: "/dashboard/studios", icon: Building2 },
-  { label: "My Bookings", href: "/dashboard/bookings", icon: CalendarCheck },
+  { label: "Dashboard", href: "/my-listings", icon: LayoutDashboard },
+  { label: "Add New Studio", href: "/add-studio", icon: PlusSquare },
+  { label: "My Studio Listings", href: "/my-listings", icon: Building2 },
+  { label: "My Bookings", href: "/my-bookings", icon: CalendarCheck },
 ];
 
 /* ------------------------------ helpers ------------------------------- */
