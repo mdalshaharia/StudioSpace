@@ -91,11 +91,22 @@ export default function MyListingsPage() {
   /* delete */
   const confirmDelete = async (productId) => {
     console.log(productId)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${productId}`, {
+    setDeleting(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${productId}`, {
         method:'DELETE'
-    })
-    const data = await res.json() 
-    console.log(data)
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      console.log(data)
+      setListings((prev) => prev.filter((l) => l?._id !== productId));
+      setStudios((prev) => prev.filter((s) => s._id !== productId));
+      toast.success("Listing deleted.");
+    } catch {
+      toast.error("Could not delete the listing. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
