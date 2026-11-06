@@ -5,7 +5,7 @@
  * Place at: components/Modal/BookingModal.jsx
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -41,35 +41,29 @@ const pad = (n) => String(n).padStart(2, "0");
 const toTime = (h) => `${pad(h)}:00`;
 
 const fieldCls =
-  "h-11 w-full rounded-xl border-white/10 bg-neutral-950 text-white focus-visible:ring-amber-400/60";
+  "h-11 w-full rounded-xl border-slate-200 bg-slate-50 text-slate-800 focus-visible:ring-[#E64833]/60";
 
 export default function BookingModal({ studio, open, onOpenChange }) {
   const router = useRouter();
   const { data: session } = useSession();
 
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(() => new Date());
   const [dateOpen, setDateOpen] = useState(false);
   const [start, setStart] = useState("12");
   const [hours, setHours] = useState("3");
   const [submitting, setSubmitting] = useState(false);
 
-  // reset when the modal opens
-  useEffect(() => {
-    if (open) {
-      setDate(new Date());
-      setStart("12");
-      setHours("3");
-    }
-  }, [open]);
-
   const startNum = Number(start);
   const maxHours = Math.min(8, CLOSING_HOUR - startNum);
   const hoursNum = Math.min(Number(hours), maxHours);
 
-  // keep hours valid if the start time changes
-  useEffect(() => {
-    if (Number(hours) > maxHours) setHours(String(maxHours));
-  }, [maxHours, hours]);
+  const handleStartChange = (val) => {
+    setStart(val);
+    const nextMax = Math.min(8, CLOSING_HOUR - Number(val));
+    if (Number(hours) > nextMax) {
+      setHours(String(nextMax));
+    }
+  };
 
   const { rentTotal, total } = useMemo(() => {
     const hourlyRate = studio?.hourlyRate ? Number(studio.hourlyRate) : 0;
@@ -159,9 +153,9 @@ export default function BookingModal({ studio, open, onOpenChange }) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !submitting && onOpenChange?.(o)}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border-white/10 bg-neutral-900 p-6 text-white sm:max-w-lg sm:p-8">
+      <DialogContent className="max-h-[92vh] overflow-y-auto rounded-3xl border-slate-200 bg-white p-6 text-slate-800 sm:max-w-lg sm:p-8">
         <DialogHeader className="text-left">
-          <DialogTitle className="text-2xl font-extrabold tracking-tight">
+          <DialogTitle className="text-2xl font-extrabold tracking-tight text-[#244855]">
             Book {studio.title}
           </DialogTitle>
           <DialogDescription className="sr-only">
@@ -172,20 +166,20 @@ export default function BookingModal({ studio, open, onOpenChange }) {
         <div className="space-y-4">
           {/* date */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-neutral-200">Date</Label>
+            <Label className="text-xs font-semibold text-slate-600">Date</Label>
             <Popover open={dateOpen} onOpenChange={setDateOpen}>
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="flex h-12 w-full items-center justify-between rounded-xl border border-white/10 bg-neutral-950 px-4 text-left text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-amber-400/60"
+                  className="flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 text-left text-sm font-medium text-slate-800 outline-none transition focus-visible:ring-2 focus-visible:ring-[#E64833]/60"
                 >
                   {format(date, "EEE, d MMM yyyy")}
-                  <CalendarDays className="h-4 w-4 text-neutral-400" aria-hidden />
+                  <CalendarDays className="h-4 w-4 text-slate-400" aria-hidden />
                 </button>
               </PopoverTrigger>
               <PopoverContent
                 align="start"
-                className="w-auto border-white/10 bg-neutral-900 p-2 text-white"
+                className="w-auto border-slate-200 bg-white p-2 text-slate-800"
               >
                 <Calendar
                   mode="single"
@@ -206,14 +200,14 @@ export default function BookingModal({ studio, open, onOpenChange }) {
           {/* start + hours */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-neutral-200">Start time</Label>
-              <Select value={start} onValueChange={setStart}>
+              <Label className="text-xs font-semibold text-slate-600">Start time</Label>
+              <Select value={start} onValueChange={handleStartChange}>
                 <SelectTrigger className={fieldCls}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-neutral-900 text-neutral-200">
+                <SelectContent className="border-slate-200 bg-white text-slate-700">
                   {START_HOURS.map((h) => (
-                    <SelectItem key={h} value={String(h)} className="focus:bg-white/10 focus:text-white">
+                    <SelectItem key={h} value={String(h)} className="focus:bg-slate-100 focus:text-slate-900">
                       {toTime(h)}
                     </SelectItem>
                   ))}
@@ -222,14 +216,14 @@ export default function BookingModal({ studio, open, onOpenChange }) {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-neutral-200">Hours</Label>
+              <Label className="text-xs font-semibold text-slate-600">Hours</Label>
               <Select value={String(hoursNum)} onValueChange={setHours}>
                 <SelectTrigger className={fieldCls}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-white/10 bg-neutral-900 text-neutral-200">
+                <SelectContent className="border-slate-200 bg-white text-slate-700">
                   {Array.from({ length: maxHours }, (_, i) => i + 1).map((n) => (
-                    <SelectItem key={n} value={String(n)} className="focus:bg-white/10 focus:text-white">
+                    <SelectItem key={n} value={String(n)} className="focus:bg-slate-100 focus:text-slate-900">
                       {n} {n === 1 ? "hour" : "hours"}
                     </SelectItem>
                   ))}
@@ -241,7 +235,7 @@ export default function BookingModal({ studio, open, onOpenChange }) {
           {/* name + email (read-only, from session) */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <Label htmlFor="bk-name" className="text-xs font-semibold text-neutral-200">
+              <Label htmlFor="bk-name" className="text-xs font-semibold text-slate-600">
                 Your name
               </Label>
               <Input
@@ -249,11 +243,11 @@ export default function BookingModal({ studio, open, onOpenChange }) {
                 readOnly
                 value={session?.user?.name ?? ""}
                 placeholder="Sign in to book"
-                className={`${fieldCls} cursor-not-allowed bg-white/5 text-neutral-300`}
+                className={`${fieldCls} cursor-not-allowed bg-slate-100 text-slate-500`}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="bk-email" className="text-xs font-semibold text-neutral-200">
+              <Label htmlFor="bk-email" className="text-xs font-semibold text-slate-600">
                 Your email
               </Label>
               <Input
@@ -261,19 +255,19 @@ export default function BookingModal({ studio, open, onOpenChange }) {
                 readOnly
                 value={session?.user?.email ?? ""}
                 placeholder="Sign in to book"
-                className={`${fieldCls} cursor-not-allowed bg-white/5 text-neutral-300`}
+                className={`${fieldCls} cursor-not-allowed bg-slate-100 text-slate-500`}
               />
             </div>
           </div>
 
           {/* price breakdown */}
-          <dl className="space-y-2 border-t border-white/10 pt-4 text-sm">
+          <dl className="space-y-2 border-t border-slate-100 pt-4 text-sm">
             <Row
               label={`$${studio.hourlyRate} x ${hoursNum} ${hoursNum === 1 ? "hour" : "hours"}`}
               value={`$${rentTotal}`}
             />
             <Row label="Security deposit (refundable)" value={`$${studio.securityDeposit}`} />
-            <div className="flex justify-between pt-1 text-base font-bold">
+            <div className="flex justify-between pt-1 text-base font-bold text-[#244855]">
               <dt>Total</dt>
               <dd>${total}</dd>
             </div>
@@ -282,7 +276,7 @@ export default function BookingModal({ studio, open, onOpenChange }) {
           <Button
             onClick={handleConfirm}
             disabled={submitting}
-            className="h-12 w-full rounded-xl bg-amber-400 text-base font-semibold text-neutral-900 hover:bg-amber-300"
+            className="h-12 w-full rounded-xl bg-[#E64833] text-base font-semibold text-white hover:bg-[#E64833]/90"
           >
             {submitting ? (
               <>
@@ -292,7 +286,7 @@ export default function BookingModal({ studio, open, onOpenChange }) {
               "Confirm Booking"
             )}
           </Button>
-          <p className="text-center text-xs text-neutral-400">Saved to bookings with status Pending.</p>
+          <p className="text-center text-xs text-slate-400">Saved to bookings with status Pending.</p>
         </div>
       </DialogContent>
     </Dialog>
@@ -301,7 +295,7 @@ export default function BookingModal({ studio, open, onOpenChange }) {
 
 function Row({ label, value }) {
   return (
-    <div className="flex justify-between text-neutral-300">
+    <div className="flex justify-between text-slate-500">
       <dt>{label}</dt>
       <dd>{value}</dd>
     </div>

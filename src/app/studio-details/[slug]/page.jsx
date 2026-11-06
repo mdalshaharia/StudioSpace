@@ -37,7 +37,7 @@ export default function StudioDetailsPage({ params }) {
 }
 
 function StudioDetails({ params }) {
-  // Unwrap params using React.use() for Client Components in Next.js
+
   const { slug } = use(params);
   const { data: session, isPending } = useSession();
 
@@ -64,17 +64,14 @@ function StudioDetails({ params }) {
     fetchStudio();
   }, [slug]);
 
-  // Show loading state while fetching
   if (loading) {
     return <div className="p-6 text-center">Loading studio details...</div>;
   }
 
-  // Handle product not found
   if (!product) {
     return <div className="p-6 text-center text-red-500">দুঃখিত, পণ্যটি পাওয়া যায়নি।</div>;
   }
 
-  // Destructure safely *after* confirming product exists
   const {
     title,
     category,
@@ -103,43 +100,11 @@ function StudioDetails({ params }) {
           {images.length > 0 && (
             <>
               <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
-                {images.length > 1 && (
-                  <>
-                    <button
-                      aria-label="Previous image"
-                      className="absolute left-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-neutral-950/80 text-white backdrop-blur hover:bg-neutral-950"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      aria-label="Next image"
-                      className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-neutral-950/80 text-white backdrop-blur hover:bg-neutral-950"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                    <span className="absolute bottom-3 left-4 text-[10px] font-semibold uppercase tracking-wider text-white/90">
-                    </span>
-                  </>
-                )}
+                <img src={images[0]} alt={title} className="h-full w-full object-cover" />
               </div>
 
-              {images.length > 1 && (
-                <div className="mt-3 grid grid-cols-4 gap-2 sm:gap-3">
-                  {images.map((src, i) => (
-                    <button
-                      key={src + i}
-                      aria-label={`Show image ${i + 1}`}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
             </>
           )}
-
-          {/* title */}
           <Badge variant="outline" className="mt-6 rounded-full border-white/20 text-xs font-normal text-neutral-200">
             {category}
           </Badge>

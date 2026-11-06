@@ -36,12 +36,10 @@ import Image from "next/image";
 
 /* ---------------------------- route config ---------------------------- */
 const NAV_LINKS = [
-  { label: "Explore", href: "/explore-studio" },
+  { label: "Home", href: "/" },
+  { label: "Explore Studios", href: "/explore-studio" },
   { label: "How it works", href: "/how-it-works" },
-  { label: "List your space", href: "/my-listings" },
-  { label: "Pricing", href: "/pricing" },
   { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
 ];
 
 const USER_MENU = [
@@ -66,15 +64,16 @@ const initials = (name = "") =>
 
 function Logo({ onClick }) {
   return (
-    <Link href="/" onClick={onClick} className="flex items-center gap-2.5" aria-label="StudioSpace home">
-      <span className="grid h-8 w-8 place-items-center rounded-lg text-base font-black">
-        <Image src='/brad-logo.png' height={24} width={24} alt="StudioSpace Logo" />
+    <Link href="/" onClick={onClick} className="group flex items-center gap-2.5" aria-label="StudioSpace home">
+      <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#244855]/10 text-[#244855] transition-transform duration-200 group-hover:scale-105">
+        <Image src="/brad-logo.png" height={22} width={22} alt="StudioSpace Logo" className="object-contain" />
       </span>
-      <span className="text-lg font-bold tracking-widest text-white">StudioSpace</span>
+      <span className="text-xl font-extrabold tracking-tight text-[#244855]">
+        Studio<span className="text-[#E64833]">Space</span>
+      </span>
     </Link>
   );
 }
-
 
 export default function Navbar() {
   const { data: session, isPending } = useSession();
@@ -91,7 +90,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-neutral-950/80 backdrop-blur-md supports-[backdrop-filter]:bg-neutral-950/60">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-xs transition-colors duration-200">
       <nav className="navbar mx-auto min-h-16 max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* ---------- left: hamburger (mobile) + logo ---------- */}
         <div className="navbar-start gap-1">
@@ -99,7 +98,7 @@ export default function Navbar() {
             <SheetTrigger
               render={
                 <button
-                  className="btn btn-ghost btn-square text-neutral-200 hover:text-white hover:bg-white/10 lg:hidden"
+                  className="btn btn-ghost btn-square text-slate-700 hover:bg-slate-100 hover:text-[#244855] lg:hidden"
                   aria-label="Open menu"
                 />
               }
@@ -109,15 +108,15 @@ export default function Navbar() {
 
             <SheetContent
               side="left"
-              className="w-[85%] max-w-xs border-white/10 bg-neutral-950 p-0 text-white"
+              className="w-[85%] max-w-xs border-r border-slate-200 bg-white p-0 text-slate-900 shadow-2xl"
             >
-              <SheetHeader className="border-b border-white/10 p-4 text-left">
+              <SheetHeader className="border-b border-slate-100 p-4 text-left">
                 <SheetTitle render={<div />}>
-                  <Logo onClick={() => setOpen(false)} className="text-white" />
+                  <Logo onClick={() => setOpen(false)} />
                 </SheetTitle>
               </SheetHeader>
 
-              <ul className="menu w-full gap-1 p-3 text-white">
+              <ul className="menu w-full gap-1 p-3 text-slate-800">
                 {NAV_LINKS.map(({ label, href }) => {
                   const active = isActive(pathname, href);
                   return (
@@ -128,10 +127,11 @@ export default function Navbar() {
                           <Link
                             href={href}
                             aria-current={active ? "page" : undefined}
-                            className={`uppercase tracking-wide text-xs ${active
-                                ? "bg-amber-400/10 font-semibold text-amber-400"
-                                : "text-neutral-300 hover:text-white"
-                              }`}
+                            className={`rounded-xl px-3 py-2.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                              active
+                                ? "bg-[#E64833]/10 font-bold text-[#E64833]"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-[#244855]"
+                            }`}
                           />
                         }
                       >
@@ -142,12 +142,17 @@ export default function Navbar() {
                 })}
               </ul>
 
-              <div className="mt-auto border-t border-white/10 p-4">
+              <div className="mt-auto border-t border-slate-100 bg-slate-50/60 p-4">
                 {user ? (
                   <div className="space-y-1">
-                    <div className="mb-3 flex items-center gap-3">
+                    <div className="mb-3 flex items-center gap-3 px-1">
                       <UserAvatar user={user} />
-                      <p className="truncate font-medium">{user.name}</p>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-slate-900">{user.name}</p>
+                        {user.email && (
+                          <p className="truncate text-xs text-slate-500">{user.email}</p>
+                        )}
+                      </div>
                     </div>
                     {USER_MENU.map(({ label, href, icon: Icon }) => (
                       <SheetClose
@@ -156,7 +161,11 @@ export default function Navbar() {
                         render={
                           <Link
                             href={href}
-                            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-300 hover:bg-white/5 hover:text-white"
+                            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition ${
+                              isActive(pathname, href)
+                                ? "bg-[#E64833]/10 font-semibold text-[#E64833]"
+                                : "text-slate-700 hover:bg-slate-100 hover:text-[#244855]"
+                            }`}
                           />
                         }
                       >
@@ -166,7 +175,7 @@ export default function Navbar() {
                     ))}
                     <button
                       onClick={handleLogout}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10"
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
                     >
                       <LogOut className="h-4 w-4" />
                       Logout
@@ -179,7 +188,7 @@ export default function Navbar() {
                       render={
                         <Link
                           href="/signin"
-                          className="btn btn-outline border-white/20 text-white"
+                          className="btn btn-outline rounded-xl border-slate-300 font-semibold text-slate-800 hover:border-slate-400 hover:bg-slate-100"
                         />
                       }
                     >
@@ -190,7 +199,7 @@ export default function Navbar() {
                       render={
                         <Link
                           href="/signup"
-                          className="btn rounded-full border-none bg-amber-400 text-neutral-900 hover:bg-amber-300"
+                          className="btn rounded-xl border-none bg-[#E64833] font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b]"
                         />
                       }
                     >
@@ -220,14 +229,16 @@ export default function Navbar() {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative px-3.5 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
-                      active ? "text-amber-400 font-bold" : "text-neutral-300 hover:text-white"
+                    className={`relative rounded-lg px-3.5 py-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
+                      active
+                        ? "font-bold text-[#E64833]"
+                        : "text-slate-600 hover:bg-slate-100/70 hover:text-[#244855]"
                     }`}
                   >
                     {label}
                     {/* active route indicator */}
                     <span
-                      className={`absolute inset-x-3 -bottom-[17px] h-0.5 rounded-full bg-amber-400 transition-opacity ${
+                      className={`absolute inset-x-3 -bottom-[17px] h-0.5 rounded-full bg-[#E64833] transition-opacity duration-200 ${
                         active ? "opacity-100" : "opacity-0"
                       }`}
                     />
@@ -241,60 +252,63 @@ export default function Navbar() {
         {/* ---------- right: auth area ---------- */}
         <div className="navbar-end gap-2">
           {isPending ? (
-            <div className="h-9 w-9 animate-pulse rounded-full bg-neutral-800" aria-hidden />
+            <div className="h-9 w-9 animate-pulse rounded-full bg-slate-200" aria-hidden />
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
                   <button
-                    className="flex items-center gap-2 rounded-full p-1 pr-2 outline-none ring-amber-400/60 transition hover:bg-white/5 focus-visible:ring-2"
+                    className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 pr-2.5 shadow-2xs outline-none ring-[#244855]/30 transition hover:bg-slate-50 focus-visible:ring-2"
                     aria-label="Open user menu"
                   />
                 }
               >
                 <UserAvatar user={user} />
-                <span className="hidden max-w-[120px] truncate text-sm font-medium text-neutral-200 md:block">
+                <span className="hidden max-w-[120px] truncate text-sm font-semibold text-slate-800 md:block">
                   {user.name}
                 </span>
-                <ChevronDown className="hidden h-4 w-4 text-neutral-400 md:block" />
+                <ChevronDown className="hidden h-4 w-4 text-slate-500 md:block" />
               </DropdownMenuTrigger>
 
               <DropdownMenuContent
                 align="end"
-                className="w-60 border-white/10 bg-neutral-900 text-neutral-200"
+                className="w-60 rounded-2xl border border-slate-200 bg-white p-1.5 text-slate-700 shadow-xl"
               >
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel className="truncate text-white">
-                    {user.name}
+                  <DropdownMenuLabel className="truncate px-3 py-2 text-slate-900">
+                    <span className="font-semibold text-slate-900">{user.name}</span>
                     {user.email && (
-                      <span className="block truncate text-xs font-normal text-neutral-400">
+                      <span className="block truncate text-xs font-normal text-slate-500">
                         {user.email}
                       </span>
                     )}
                   </DropdownMenuLabel>
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator className="my-1 bg-slate-100" />
                 {USER_MENU.map(({ label, href, icon: Icon }) => (
                   <DropdownMenuItem
                     key={href}
                     render={
                       <Link
                         href={href}
-                        className={isActive(pathname, href) ? "text-amber-400" : undefined}
+                        className={`cursor-pointer rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                          isActive(pathname, href)
+                            ? "bg-[#E64833]/10 font-semibold text-[#E64833]"
+                            : "text-slate-700 hover:bg-slate-100 hover:text-[#244855] focus:bg-slate-100 focus:text-[#244855]"
+                        }`}
                       />
                     }
-                    className="cursor-pointer focus:bg-white/10 focus:text-white"
                   >
-                    <Icon className="mr-2 h-4 w-4" />
+                    <Icon className="mr-2.5 h-4 w-4" />
                     {label}
                   </DropdownMenuItem>
                 ))}
-                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuSeparator className="my-1 bg-slate-100" />
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-400"
+                  className="cursor-pointer rounded-xl px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 focus:bg-red-50 focus:text-red-700"
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className="mr-2.5 h-4 w-4" />
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -303,20 +317,20 @@ export default function Navbar() {
             <>
               <Link
                 href="/signin"
-                className="btn btn-ghost hidden text-neutral-300 hover:text-white hover:bg-white/10 sm:inline-flex font-medium"
+                className="btn btn-ghost hidden rounded-xl px-4 text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:text-[#244855] sm:inline-flex transition"
               >
                 Sign in
               </Link>
               <Link
                 href="/signup"
-                className="btn hidden rounded-full border-none bg-amber-400 px-5 text-neutral-900 hover:bg-amber-300 sm:inline-flex font-semibold shadow-sm"
+                className="btn hidden rounded-full border-none bg-[#E64833] px-5 text-sm font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b] hover:shadow-md hover:shadow-[#E64833]/35 sm:inline-flex transition-all"
               >
                 Get started
               </Link>
-              {/* very small screens: single compact CTA (full options live in the drawer) */}
+              {/* mobile compact CTA */}
               <Link
                 href="/signin"
-                className="btn btn-sm rounded-full border-none bg-amber-400 text-neutral-900 hover:bg-amber-300 sm:hidden font-semibold"
+                className="btn btn-sm rounded-full border-none bg-[#E64833] text-xs font-semibold text-white shadow-2xs hover:bg-[#cf3e2b] sm:hidden"
               >
                 Sign in
               </Link>
@@ -330,9 +344,9 @@ export default function Navbar() {
 
 function UserAvatar({ user }) {
   return (
-    <Avatar className="h-9 w-9 ring-2 ring-amber-400/70">
-      <AvatarImage src={user.image} alt={user.name} />
-      <AvatarFallback className="font-semibold text-neutral-900">
+    <Avatar className="h-9 w-9 border border-slate-200 ring-2 ring-[#E64833]/30 shadow-2xs">
+      <AvatarImage src={user.image || "/default-avatar.png"} />
+      <AvatarFallback className="bg-[#244855]/10 font-bold text-[#244855]">
         {initials(user.name)}
       </AvatarFallback>
     </Avatar>

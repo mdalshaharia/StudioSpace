@@ -12,20 +12,20 @@ export default function Featured() {
     .slice(0, 6);
 
   return (
-    <section className="relative">
+    <section className="relative bg-white">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+            <h2 className="text-2xl font-extrabold tracking-tight text-[#244855] sm:text-3xl">
               Featured studios
             </h2>
-            <p className="mt-1 text-sm text-neutral-400">
+            <p className="mt-1 text-sm text-slate-500">
               Handpicked, highly rated creative spaces from our host community.
             </p>
           </div>
           <Link
             href="/explore-studio"
-            className="shrink-0 text-sm font-semibold text-amber-400 transition hover:text-amber-300 hover:underline inline-flex items-center gap-1"
+            className="shrink-0 text-sm font-semibold text-[#E64833] transition hover:text-[#E64833]/80 hover:underline inline-flex items-center gap-1"
           >
             See all
             <span aria-hidden="true">&rarr;</span>

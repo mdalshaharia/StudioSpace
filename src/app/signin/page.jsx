@@ -62,7 +62,7 @@ function SignIn() {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const ResData = Object.fromEntries(formData.entries());
-console.log('clicked')
+        console.log('clicked')
         try {
             setLoading(true);
             setErrors('');
@@ -99,13 +99,36 @@ console.log('clicked')
 
     /* ---------------------------- google ---------------------------- */
     const handleGoogle = async () => {
-        setGoogleLoading(true);
-        toast.success("Signing in…");
+        try {
+            setGoogleLoading(true);
+            setErrors({});
+
+            const { data, error } = await signIn.social({
+                provider: "google",
+                callbackURL: "/",
+            });
+            console.log(data)
+            if (data) {
+                toast.success("গুগল লগইন সফল হয়েছে। হোম পেজে নেওয়া হচ্ছে...");
+            }
+            if (error) {
+                console.error("Google sign-in error:", error);
+                setErrors({ form: error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।" });
+                setGoogleLoading(false); // Stop loading if it failed to redirect
+                return;
+            }
+
+        } catch (err) {
+            console.error("Unexpected error during social login:", err);
+            setErrors({ form: "কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
+        } finally {
+            setGoogleLoading(false);
+        }
     };
 
     /* ------------------------ forgot password ------------------------ */
     const handleReset = async () => {
-        cconsole.log('clicked')
+        console.log('clicked')
     };
 
     return (
@@ -168,7 +191,7 @@ console.log('clicked')
                                 </button>
                             </div>
                         </div>
-                        { errors && <p className="mt-1.5 text-xs text-red-400">{errors.form}</p> }
+                        {errors && <p className="mt-1.5 text-xs text-red-400">{errors.form}</p>}
 
                         {/* remember + forgot */}
                         <div className="flex items-center justify-between gap-3">
