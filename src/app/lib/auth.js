@@ -9,6 +9,7 @@ const db = client.db('studio-space');
 export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
+    autoSignIn: false, // require explicit sign-in after registration
   },
   socialProviders: {
     google: {

@@ -6,7 +6,7 @@ import { authClient, signOut, useSession } from "@/app/lib/auth-client";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
-  LayoutDashboard,
+  CloudUpload,
   PlusSquare,
   Building2,
   CalendarCheck,
@@ -37,13 +37,13 @@ import Image from "next/image";
 /* ---------------------------- route config ---------------------------- */
 const NAV_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Explore Studios", href: "/explore-studio" },
+  { label: "Explore Studios", href: "/studios" },
   { label: "How it works", href: "/how-it-works" },
   { label: "About", href: "/about" },
 ];
 
 const USER_MENU = [
-  { label: "Dashboard", href: "/my-listings", icon: LayoutDashboard },
+  { label: "Upload Image", href: "/upload-image", icon: CloudUpload },
   { label: "Add New Studio", href: "/add-studio", icon: PlusSquare },
   { label: "My Studio Listings", href: "/my-listings", icon: Building2 },
   { label: "My Bookings", href: "/my-bookings", icon: CalendarCheck },
@@ -203,7 +203,7 @@ function NavbarInner() {
                         />
                       }
                     >
-                      Get started
+                      Register
                     </SheetClose>
                   </div>
                 )}
@@ -325,7 +325,7 @@ function NavbarInner() {
                 href="/signup"
                 className="btn hidden rounded-full border-none bg-[#E64833] px-5 text-sm font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b] hover:shadow-md hover:shadow-[#E64833]/35 sm:inline-flex transition-all"
               >
-                Get started
+                Register
               </Link>
               {/* mobile compact CTA */}
               <Link

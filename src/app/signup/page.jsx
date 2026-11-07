@@ -5,7 +5,7 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Circle, CircleCheck, Eye, EyeOff, Loader2 } from "lucide-react";
 import { signUp, signIn } from "../lib/auth-client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
@@ -35,9 +35,6 @@ const AUTH_ERRORS = {
     "auth/popup-blocked": "Popup blocked. Allow popups and try again.",
     "auth/too-many-requests": "Too many attempts. Please try again later.",
 };
-
-const friendlyError = (err) =>
-    AUTH_ERRORS[err?.code] ?? "Something went wrong. Please try again.";
 
 const safeRedirect = (path) =>
     path && path.startsWith("/") && !path.startsWith("//") ? path : "/dashboard";
@@ -92,13 +89,14 @@ function Register() {
     const params = useSearchParams();
     const redirectTo = safeRedirect(params.get("redirect"));
     const [agree, setAgree] = useState(false);
+    const [password, setPassword] = useState("");
     const [showPw, setShowPw] = useState(false);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
 
     const busy = loading || googleLoading;
-    // const rules = useMemo(() => passwordRules(form.password), [form.password]);
+    const rules = useMemo(() => passwordRules(password), [password]);
 
     /* ------------------------- email + password ------------------------- */
     const handleSubmit = async (e) => {
@@ -106,14 +104,15 @@ function Register() {
         const formData = new FormData(e.currentTarget);
         const ResData = Object.fromEntries(formData.entries());
 
-        if (ResData.password.length < 8) {
-            setErrors({ form: "Password must be at least 8 characters." });
-            toast.error("Password must be at least 8 characters.");
+        if (!rules.every((r) => r.ok)) {
+            const msg =
+                "Password must be at least 6 characters and contain an uppercase and a lowercase letter.";
+            setErrors({ password: msg });
             return;
         }
-        if (ResData.password !== ResData.confirmPassword) {
-            setErrors({ form: "Passwords do not match." });
-            toast.error("Passwords do not match.");
+        const photoURL = ResData.photoURL?.trim() ?? "";
+        if (photoURL && !isUrl(photoURL)) {
+            setErrors({ photoURL: "Enter a valid URL starting with http:// or https:// — or leave it empty." });
             return;
         }
         try {
@@ -123,6 +122,7 @@ function Register() {
                 name: ResData.name,
                 email: ResData.email,
                 password: ResData.password,
+                image: photoURL || undefined,
             });
             if (data?.token || data?.user) {
                 toast.success("Registration successful, please sign in");
@@ -131,10 +131,8 @@ function Register() {
             if (error) {
                 if (error.message === 'User already exists. Use another email.') {
                     setErrors({ form: 'An account with this email already exists, try another one.' });
-                    toast.error('An account with this email already exists, try another one.');
                 } else {
                     setErrors({ form: error.message || "Something went wrong. Please try again." });
-                    toast.error(error.message || "Something went wrong. Please try again.");
                 }
                 return
 
@@ -142,7 +140,6 @@ function Register() {
         }
         catch (err) {
             setErrors({ form: "Something went wrong. Please try again." });
-            toast.error("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         };
@@ -164,14 +161,12 @@ function Register() {
             }
             if (error) {
                 setErrors({ form: error.message || "There was a problem signing in with Google." });
-                toast.error(error.message || "There was a problem signing in with Google.");
                 setGoogleLoading(false); // Stop loading if it failed to redirect
                 return;
             }
 
         } catch (err) {
             setErrors({ form: "Something went wrong. Please try again." });
-            toast.error("Something went wrong. Please try again.");
         } finally {
             setGoogleLoading(false);
         }
@@ -188,156 +183,177 @@ function Register() {
                 </div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] text-center">Create account</h1>
 
-                    <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                        {/* name */}
-                        <Field id="name" label="Full name" error={errors.name}>
-                            <Input
-                                id="name"
-                                autoComplete="name"
-                                placeholder="Your full name"
-                                disabled={busy}
-                                aria-invalid={!!errors.name}
-                                className={inputCls}
-                                name="name"
-                            />
-                        </Field>
+                <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                    {/* name */}
+                    <Field id="name" label="Full name" error={errors.name}>
+                        <Input
+                            id="name"
+                            autoComplete="name"
+                            placeholder="Your full name"
+                            disabled={busy}
+                            aria-invalid={!!errors.name}
+                            className={inputCls}
+                            name="name"
+                        />
+                    </Field>
 
-                        {/* email */}
-                        <Field id="email" label="Email" error={errors.email}>
-                            <Input
-                                id="email"
-                                type="email"
-                                autoComplete="email"
-                                placeholder="you@email.com"
-                                disabled={busy}
-                                aria-invalid={!!errors.email}
-                                className={inputCls}
-                                name="email"
-                            />
-                        </Field>
+                    {/* email */}
+                    <Field id="email" label="Email" error={errors.email}>
+                        <Input
+                            id="email"
+                            type="email"
+                            autoComplete="email"
+                            placeholder="you@email.com"
+                            disabled={busy}
+                            aria-invalid={!!errors.email}
+                            className={inputCls}
+                            name="email"
+                        />
+                    </Field>
 
-                        {/* password */}
-                        <Field id="password" label="Password" error={errors.password}>
-                            <div className="relative">
-                                <Input
-                                    id="password"
-                                    type={showPw ? "text" : "password"}
-                                    autoComplete="new-password"
-                                    placeholder="Create a password"
-                                    disabled={busy}
-                                    aria-invalid={!!errors.password}
-                                    className={`${inputCls} pr-11`}
-                                    name="password"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPw((s) => !s)}
-                                    aria-label={showPw ? "Hide password" : "Show password"}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
-                                >
-                                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </button>
-                            </div>
-                        </Field>
+                    {/* photo url — optional */}
+                    <Field id="photoURL" label="Photo URL (optional)" error={errors.photoURL}>
+                        <Input
+                            id="photoURL"
+                            type="url"
+                            autoComplete="photo"
+                            placeholder="https://example.com/avatar.jpg"
+                            disabled={busy}
+                            aria-invalid={!!errors.photoURL}
+                            className={inputCls}
+                            name="photoURL"
+                        />
+                    </Field>
 
-                        {/* confirm */}
-                        <Field id="confirm" label="Confirm password" error={errors.confirm}>
+                    {/* password */}
+                    <Field id="password" label="Password" error={errors.password}>
+                        <div className="relative">
                             <Input
-                                id="confirm"
+                                id="password"
                                 type={showPw ? "text" : "password"}
                                 autoComplete="new-password"
-                                placeholder="Repeat your password"
+                                placeholder="Create a password"
                                 disabled={busy}
-                                aria-invalid={!!errors.confirm}
-                                className={inputCls}
-                                name="confirmPassword"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                aria-invalid={!!errors.password}
+                                className={`${inputCls} pr-11`}
+                                name="password"
                             />
-                        </Field>
-                        {errors.form && (
-                            <Alert variant="destructive" className="mt-1.5 border-red-200 bg-red-50 text-red-700">
-                                <AlertTriangle className="h-4 w-4" />
-                                <AlertDescription className="text-red-600">
-                                    {errors.form}
-                                </AlertDescription>
-                            </Alert>
-                        )}
-
-                        {/* terms */}
-                        <div>
-                            <div className="flex items-start gap-2">
-                                <Checkbox
-                                    id="agree"
-                                    checked={agree}
-                                    onCheckedChange={(v) => {
-                                        setAgree(v === true);
-                                        if (errors.agree) setErrors((p) => ({ ...p, agree: undefined }));
-                                    }}
-                                    disabled={busy}
-                                    className="mt-0.5 border-slate-300 data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
-                                />
-                                <Label htmlFor="agree" className="cursor-pointer text-xs font-normal leading-relaxed text-slate-600">
-                                    I agree to the{" "}
-                                    <Link href="/terms" className="font-semibold text-[#E64833] hover:text-[#cf3e2b]">
-                                        Terms
-                                    </Link>{" "}
-                                    and{" "}
-                                    <Link href="/privacy" className="font-semibold text-[#E64833] hover:text-[#cf3e2b]">
-                                        Privacy Policy
-                                    </Link>
-                                    .
-                                </Label>
-                            </div>
-                            {errors.agree && <p className="mt-1.5 text-xs text-red-600">{errors.agree}</p>}
+                            <button
+                                type="button"
+                                onClick={() => setShowPw((s) => !s)}
+                                aria-label={showPw ? "Hide password" : "Show password"}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                            >
+                                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
                         </div>
 
-                        <Button
-                            type="submit"
-                            disabled={busy}
-                            className="h-11 w-full rounded-xl bg-[#E64833] font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b]"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account…
-                                </>
-                            ) : (
-                                "Create account"
-                            )}
-                        </Button>
-                    </form>
+                        {/* live password rules */}
+                        <ul className="space-y-1 pt-1" aria-live="polite">
+                            {rules.map((r) => (
+                                <li
+                                    key={r.label}
+                                    className={`flex items-center gap-1.5 text-[11px] transition-colors ${r.ok ? "text-emerald-600" : "text-slate-400"
+                                        }`}
+                                >
+                                    {r.ok ? (
+                                        <CircleCheck className="h-3 w-3 shrink-0" />
+                                    ) : (
+                                        <Circle className="h-3 w-3 shrink-0" />
+                                    )}
+                                    {r.label}
+                                </li>
+                            ))}
+                        </ul>
+                    </Field>
 
-                    <div className="my-5 flex items-center gap-3">
-                        <Separator className="flex-1 bg-slate-100" />
-                        <span className="text-xs text-slate-400">or</span>
-                        <Separator className="flex-1 bg-slate-100" />
+                    {errors.form && (
+                        <Alert variant="destructive" className="mt-1.5 border-red-200 bg-red-50 text-red-700">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertDescription className="text-red-600">
+                                {errors.form}
+                            </AlertDescription>
+                        </Alert>
+                    )}
+
+                    {/* terms */}
+                    <div>
+                        <div className="flex items-start gap-2">
+                            <Checkbox
+                                id="agree"
+                                checked={agree}
+                                onCheckedChange={(v) => {
+                                    setAgree(v === true);
+                                    if (errors.agree) setErrors((p) => ({ ...p, agree: undefined }));
+                                }}
+                                disabled={busy}
+                                className="mt-0.5 border-slate-300 data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
+                            />
+                            <Label htmlFor="agree" className="cursor-pointer text-xs font-normal leading-relaxed text-slate-600">
+                                I agree to the{" "}
+                                <Link href="/terms" className="font-semibold text-[#E64833] hover:text-[#cf3e2b]">
+                                    Terms
+                                </Link>{" "}
+                                and{" "}
+                                <Link href="/privacy" className="font-semibold text-[#E64833] hover:text-[#cf3e2b]">
+                                    Privacy Policy
+                                </Link>
+                                .
+                            </Label>
+                        </div>
+                        {errors.agree && <p className="mt-1.5 text-xs text-red-600">{errors.agree}</p>}
                     </div>
 
                     <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleGoogle}
+                        type="submit"
                         disabled={busy}
-                        className="h-11 w-full rounded-xl border-slate-200 bg-white font-semibold text-slate-800 hover:bg-slate-100 hover:text-[#244855]"
+                        className="h-11 w-full rounded-xl bg-[#E64833] font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b]"
                     >
-                        {googleLoading ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account…
+                            </>
                         ) : (
-                            <span className="mr-2">
-                                <GoogleIcon />
-                            </span>
+                            "Create account"
                         )}
-                        Continue with Google
                     </Button>
+                </form>
 
-                    <p className="mt-6 text-sm text-slate-500">
-                        Already have an account?{" "}
-                        <Link
-                            href={`/signin${redirectTo !== "/dashboard" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
-                            className="font-semibold text-[#E64833] transition hover:text-[#cf3e2b]"
-                        >
-                            Sign in
-                        </Link>
-                    </p>
+                <div className="my-5 flex items-center gap-3">
+                    <Separator className="flex-1 bg-slate-100" />
+                    <span className="text-xs text-slate-400">or</span>
+                    <Separator className="flex-1 bg-slate-100" />
                 </div>
+
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGoogle}
+                    disabled={busy}
+                    className="h-11 w-full rounded-xl border-slate-200 bg-white font-semibold text-slate-800 hover:bg-slate-100 hover:text-[#244855]"
+                >
+                    {googleLoading ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                        <span className="mr-2">
+                            <GoogleIcon />
+                        </span>
+                    )}
+                    Continue with Google
+                </Button>
+
+                <p className="mt-6 text-sm text-slate-500">
+                    Already have an account?{" "}
+                    <Link
+                        href={`/signin${redirectTo !== "/dashboard" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
+                        className="font-semibold text-[#E64833] transition hover:text-[#cf3e2b]"
+                    >
+                        Sign in
+                    </Link>
+                </p>
+            </div>
         </section>
     );
 }

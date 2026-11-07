@@ -80,7 +80,7 @@ export default function ByCategory() {
                 className="w-[calc((100%-0.75rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-4rem)/5)]"
               >
                 <Link
-                  href={`/explore-studio`}
+                  href={`/studios`}
                   className="group relative flex h-36 w-full items-end overflow-hidden rounded-2xl border border-slate-200 p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833] hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70 sm:h-40 lg:h-44"
                 >
                   {category.imageUrl && (

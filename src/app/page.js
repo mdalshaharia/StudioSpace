@@ -7,11 +7,13 @@ import Preview from "@/components/Preview/Preview";
 import BookingWorks from "@/components/BookingWorks/BookingWorks";
 import TrustSafety from "@/components/TrustSafety/TrustSafety";
 import Footer from "@/components/Footer/Footer";
+import Banner from "@/components/Banner/Banner";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-slate-800">
       <Navbar />
+      <Banner></Banner>
       <Hero />
       <ByCategory />
       <Featured />
