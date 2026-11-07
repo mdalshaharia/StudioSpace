@@ -27,7 +27,10 @@ async function handleExpiredSession() {
     /* session might already be gone */
   }
   toast.error("Your session has expired. Please sign in again.");
-  window.location.assign("/signin");
+  /* module runs outside React components (no useRouter available); a hard
+     reload is intentional here so stale client state is cleared after sign-out */
+  // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+  window.location.href = "/signin";
 }
 
 export async function authorizedFetch(url, options = {}) {

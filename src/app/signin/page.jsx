@@ -82,7 +82,7 @@ function SignIn() {
                 password: ResData.password,
             });
             if (data) {
-                toast.success("লগইন সফল হয়েছে। হোম পেজে নেওয়া হচ্ছে...");
+                toast.success("Sign in successful. Redirecting to home page...");
                 setTimeout(() => {
                     router.push("/");
                     router.refresh();
@@ -90,17 +90,17 @@ function SignIn() {
             }
             if (error) {
                 if (error.message === 'Invalid email or password') {
-                    setErrors({ form: "ইমেইল বা পাসওয়ার্ড ভুল হয়েছে। আবার চেষ্টা করুন।" });
+                    setErrors({ form: "Incorrect email or password. Please try again." });
                 } else {
-                    setErrors({ form: error.message || "লগইন করতে সমস্যা হচ্ছে।" });
+                    setErrors({ form: error.message || "There was a problem signing in." });
                 }
-                toast.error("লগইন করতে সমস্যা হয়েছে।");
+                toast.error("Sign in failed.");
                 return;
             }
 
         } catch (err) {
-            setErrors({ form: "কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।" });
-            toast.error("কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।");
+            setErrors({ form: "Something went wrong. Please try again." });
+            toast.error("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -117,18 +117,18 @@ function SignIn() {
                 callbackURL: "/",
             });
             if (data) {
-                toast.success("গুগল লগইন সফল হয়েছে। হোম পেজে নেওয়া হচ্ছে...");
+                toast.success("Google sign in successful. Redirecting to home page...");
             }
             if (error) {
-                setErrors({ form: error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।" });
-                toast.error(error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।");
+                setErrors({ form: error.message || "There was a problem signing in with Google." });
+                toast.error(error.message || "There was a problem signing in with Google.");
                 setGoogleLoading(false); // Stop loading if it failed to redirect
                 return;
             }
 
         } catch (err) {
-            setErrors({ form: "কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
-            toast.error("কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+            setErrors({ form: "Something went wrong. Please try again." });
+            toast.error("Something went wrong. Please try again.");
         } finally {
             setGoogleLoading(false);
         }
@@ -136,7 +136,7 @@ function SignIn() {
 
     /* ------------------------ forgot password ------------------------ */
     const handleReset = async () => {
-        toast.info("পাসওয়ার্ড রিসেট শীঘ্রই আসছে।");
+        toast.info("Password reset coming soon.");
     };
 
     return (

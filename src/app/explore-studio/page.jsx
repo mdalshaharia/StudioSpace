@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useContext, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Search, SearchX } from "lucide-react";
 
 import ProductContext from "@/context/productContext";
@@ -110,14 +110,24 @@ function Explore() {
   const totalPages = Math.max(1, Math.ceil(sortedList.length / PAGE_SIZE));
 
   /* reset to page 1 whenever the filters change so the range stays valid */
-  useEffect(() => {
+  const [prevFilters, setPrevFilters] = useState({
+    searchQuery,
+    selectedCategory,
+    sortBy,
+  });
+  if (
+    prevFilters.searchQuery !== searchQuery ||
+    prevFilters.selectedCategory !== selectedCategory ||
+    prevFilters.sortBy !== sortBy
+  ) {
+    setPrevFilters({ searchQuery, selectedCategory, sortBy });
     setPage(1);
-  }, [searchQuery, selectedCategory, sortBy]);
+  }
 
   /* keep the active page in range if the list shrinks */
-  useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
-  }, [page, totalPages]);
+  if (page > totalPages) {
+    setPage(totalPages);
+  }
 
   /* jump to a page and bring the grid back into view */
   const goToPage = (next) => {

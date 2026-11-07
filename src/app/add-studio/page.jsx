@@ -250,9 +250,10 @@ function AddStudioForm() {
       }
     }
 
-    toast.success(isEdit ? "Studio updated successfully!" : "Studio added successfully!");
+    // toast.success(isEdit ? "Studio updated successfully!" : "Studio added successfully!");
     setSubmitting(false);
     router.push(LISTINGS_ROUTE);
+    toast.warning("Reload the page to see your new listings");
   };
 
   if (isPending || !session?.user || loadingStudio) {

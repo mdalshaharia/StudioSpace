@@ -35,11 +35,8 @@ export default function MyBookingsPage() {
   const [confirming, setConfirming] = useState(false);
 
   const fetchData = useCallback(async () => {
-    // signed out — nothing to fetch
     if (!session?.user?.id) return;
 
-    setLoading(true);
-    setError(false);
     try {
       const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${session.user.id}`, {
         cache: "no-store",
@@ -47,6 +44,7 @@ export default function MyBookingsPage() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       setBookings(data);
+      setError(false);
     } catch {
       setError(true);
       toast.error("Could not load your bookings. Please try again.");
@@ -55,15 +53,40 @@ export default function MyBookingsPage() {
     }
   }, [session]);
 
+  /* run the fetch on mount / session change */
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (!session?.user?.id) return;
+    let ignore = false;
+
+    (async () => {
+      try {
+        const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${session.user.id}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (!ignore) {
+          setBookings(data);
+          setError(false);
+          setLoading(false);
+        }
+      } catch {
+        if (!ignore) {
+          setError(true);
+          toast.error("Could not load your bookings. Please try again.");
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [session]);
 
 
   /* cancel */
   const confirmCancel = async (bookingId) => {
-    // console.log(bookingId)
-    // console.log(session?.user.id)
     setCancelling(true);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${bookingId}?userId=${session?.user.id}`, {
@@ -153,7 +176,10 @@ export default function MyBookingsPage() {
               icon={CircleAlert}
               action={
                 <Button
-                  onClick={fetchData}
+                  onClick={() => {
+                    setLoading(true);
+                    fetchData();
+                  }}
                   className="rounded-xl bg-[#E64833] font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b]"
                 >
                   Try again

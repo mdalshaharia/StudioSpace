@@ -107,13 +107,13 @@ function Register() {
         const ResData = Object.fromEntries(formData.entries());
 
         if (ResData.password.length < 8) {
-            setErrors({ form: "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।" });
-            toast.error("পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।");
+            setErrors({ form: "Password must be at least 8 characters." });
+            toast.error("Password must be at least 8 characters.");
             return;
         }
         if (ResData.password !== ResData.confirmPassword) {
-            setErrors({ form: "পাসওয়ার্ড দুটি মিলছে না।" });
-            toast.error("পাসওয়ার্ড দুটি মিলছে না।");
+            setErrors({ form: "Passwords do not match." });
+            toast.error("Passwords do not match.");
             return;
         }
         try {
@@ -125,24 +125,24 @@ function Register() {
                 password: ResData.password,
             });
             if (data?.token || data?.user) {
-                toast.success("রেজিস্ট্রেশন সফল হয়েছে, লগইন করুন");
+                toast.success("Registration successful, please sign in");
                 router.push('/signin')
             }
             if (error) {
                 if (error.message === 'User already exists. Use another email.') {
-                    setErrors({ form: 'এই ইমেইল দিয়ে একটি অ্যাকাউন্ট রয়েছে, অন্যটি চেষ্টা করুন।' });
-                    toast.error('এই ইমেইল দিয়ে একটি অ্যাকাউন্ট রয়েছে, অন্যটি চেষ্টা করুন।');
+                    setErrors({ form: 'An account with this email already exists, try another one.' });
+                    toast.error('An account with this email already exists, try another one.');
                 } else {
-                    setErrors({ form: error.message || "কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।" });
-                    toast.error(error.message || "কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।");
+                    setErrors({ form: error.message || "Something went wrong. Please try again." });
+                    toast.error(error.message || "Something went wrong. Please try again.");
                 }
                 return
 
             }
         }
         catch (err) {
-            setErrors({ form: "কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।" });
-            toast.error("কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।");
+            setErrors({ form: "Something went wrong. Please try again." });
+            toast.error("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
         };
@@ -160,18 +160,18 @@ function Register() {
                 callbackURL: "/",
             });
             if (data) {
-                toast.success("গুগল লগইন সফল হয়েছে। হোম পেজে নেওয়া হচ্ছে...");
+                toast.success("Google sign in successful. Redirecting to home page...");
             }
             if (error) {
-                setErrors({ form: error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।" });
-                toast.error(error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।");
+                setErrors({ form: error.message || "There was a problem signing in with Google." });
+                toast.error(error.message || "There was a problem signing in with Google.");
                 setGoogleLoading(false); // Stop loading if it failed to redirect
                 return;
             }
 
         } catch (err) {
-            setErrors({ form: "কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
-            toast.error("কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+            setErrors({ form: "Something went wrong. Please try again." });
+            toast.error("Something went wrong. Please try again.");
         } finally {
             setGoogleLoading(false);
         }

@@ -93,9 +93,10 @@ function StudioDetails({ params }) {
           {/* gallery */}
           {images.length > 0 && (
             <>
-              <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                <img src={images[0]} alt={title} className="h-full w-full object-cover" />
-              </div>
+                <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={images[0]} alt={title} className="h-full w-full object-cover" />
+                </div>
 
             </>
           )}
