@@ -24,6 +24,10 @@ import { useSession } from "../lib/auth-client";
 import { getTokenFromClient } from "../lib/getTokenFromClient";
 import ProductContext from "@/context/productContext";
 import ListingCard from "@/components/Card/ListingCard/ListingCard";
+import Navbar from "@/components/Navbar/Navbar";
+import Footer from "@/components/Footer/Footer";
+import { SkeletonList } from "@/components/Skeletons";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 /* ------------------------------ config ------------------------------ */
 
@@ -44,7 +48,7 @@ export default function MyListingsPage() {
   const [toDelete, setToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [listings, setListings] = useState([])
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { data: session, isPending } = useSession();
    const { products = [], error } = useContext(ProductContext);
  
@@ -69,20 +73,15 @@ useEffect(() => {
 
         if (res.ok) {
           const resData = await res.json();
-          console.log('response data :', resData);
 
-          // 1. Create a Set of IDs from the response data for instant O(1) lookups
-          // (Using p.productId or p._id depending on how your backend structures the response)
           const resIds = new Set(resData.map((p) => p.productId || p._id));
 
-          // 2. Safely filter products using .has() instead of an array-to-string comparison
           const filteredData = products.filter((d) => resIds.has(d._id));
-          
-          console.log("Filtered data:", filteredData);
           setListings(filteredData);
         }
       } catch (err) {
-        console.error('Failed to fetch product:', err);
+        toast.error("Could not load your listings. Please try again.");
+        setListings([]);
       } finally {
         setLoading(false);
       }
@@ -99,15 +98,24 @@ useEffect(() => {
     // console.log(productId)
     setDeleting(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${productId}`, {
-        method:'DELETE'
-      });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      console.log(data)
+      const token = await getTokenFromClient();
+      const [studioRes, listingRes] = await Promise.all([
+      fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${productId}?userId=${session.user.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      }),
+      fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings/${productId}?userId=${session.user.id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    ]);
+      if (!studioRes.ok || !listingRes.ok) {
+      throw new Error("Failed to delete from one or more endpoints.");
+    }
       setListings((prev) => prev.filter((l) => l?._id !== productId));
       setStudios((prev) => prev.filter((s) => s._id !== productId));
       toast.success("Listing deleted.");
+      setToDelete(null);
     } catch {
       toast.error("Could not delete the listing. Please try again.");
     } finally {
@@ -116,21 +124,22 @@ useEffect(() => {
   };
 
   return (
-    <main className="bg-neutral-950 text-white">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+    <main className="flex min-h-screen flex-col bg-white text-slate-800">
+      <Navbar />
+      <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         {/* header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+            <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] sm:text-4xl">
               My studio listings
             </h1>
-            <p className="mt-1 text-sm text-neutral-400">
+            <p className="mt-1 text-sm text-slate-500">
               Spaces you host. Update details or remove a listing.
             </p>
           </div>
           <Link
             href={ADD_ROUTE}
-            className="btn rounded-xl border-none bg-amber-400 px-5 text-neutral-900 hover:bg-amber-300 sm:self-start"
+            className="btn rounded-xl border-none bg-[#E64833] px-5 text-white shadow-sm shadow-[#E64833]/25 transition hover:bg-[#cf3e2b] sm:self-start"
           >
             Add new studio
           </Link>
@@ -138,55 +147,29 @@ useEffect(() => {
 
         {/* body */}
         <div className="mt-6">
-          {/* {status === "loading" && <LoadingState />} */}
-
-          {status === "error" && (
-            <EmptyState
-              title="Something went wrong"
-              text="We couldn't load your listings."
-              action={
-                <Button
-                  onClick={() => user && load(user)}
-                  className="rounded-xl bg-amber-400 font-semibold text-neutral-900 hover:bg-amber-300"
-                >
-                  Try again
-                </Button>
-              }
-            />
-          )}
-
-          {status === "ready" && studios.length === 0 && (
-            <EmptyState
-              title="No listings yet"
-              text="Add your first studio and start getting bookings."
-              action={
-                <Link
-                  href={ADD_ROUTE}
-                  className="btn rounded-xl border-none bg-amber-400 text-neutral-900 hover:bg-amber-300"
-                >
-                  Add new studio
-                </Link>
-              }
-            />
-          )}
-
-          {listings.length > 0 && (
+          {loading ? (
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <SkeletonList rows={4} />
+            </div>
+          ) : listings.length === 0 ? (
+            <EmptyState href={ADD_ROUTE} label="Add new studio" icon={Building2} />
+          ) : (
             <>
-            <ListingCard products={listings} confirmDelete={confirmDelete} ></ListingCard>
+            <ListingCard products={listings} onRequestDelete={(s) => setToDelete(s)} ></ListingCard>
 
               {/* ---------- mobile: cards ---------- */}
               <ul className="space-y-3 md:hidden">
                 {listings.map((s) => (
                   <li
                     key={s._id}
-                    className="rounded-2xl border border-white/10 bg-neutral-900 p-4"
+                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
                   >
                     <div className="flex items-center gap-3">
                       <Thumb src={s.imageUrl} alt={s.title} />
                       <div className="min-w-0">
-                        <p className="truncate font-bold">{s.title}</p>
-                        <p className="text-sm text-neutral-400">
-                          {s.location} · <span className="font-bold text-white">${s.hourlyRate}/hr</span>
+                        <p className="truncate font-bold text-[#244855]">{s.title}</p>
+                        <p className="text-sm text-slate-500">
+                          {s.location} · <span className="font-bold text-[#244855]">${s.hourlyRate}/hr</span>
                         </p>
                       </div>
                     </div>
@@ -201,29 +184,30 @@ useEffect(() => {
           )}
         </div>
       </div>
+      <Footer />
 
-      {/* delete confirmation */}
-      {/* <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && !deleting && setToDelete(null)}>
-        <AlertDialogContent className="border-white/10 bg-neutral-900 text-white">
+      {/* delete confirmation — same pattern as my-bookings cancel dialog */}
+      <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && !deleting && setToDelete(null)}>
+        <AlertDialogContent className="border-slate-200 bg-white text-slate-800">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete this studio?</AlertDialogTitle>
-            <AlertDialogDescription className="text-neutral-400">
-              “{toDelete?.title}” will be permanently removed from your listings. This can’t be
-              undone.
+            <AlertDialogTitle className="text-[#244855]">Delete this listing?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-500">
+              {toDelete &&
+                `“${toDelete.title || "This studio"}” will be permanently removed from your listings. This can’t be undone.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
               disabled={deleting}
-              className="border-white/15 bg-transparent text-white hover:bg-white/5 hover:text-white"
+              className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900"
             >
-              Cancel
+              Keep listing
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={deleting}
               onClick={(e) => {
-                e.preventDefault(); // keep dialog open until request finishes
-                confirmDelete();
+                e.preventDefault(); // stay open until the request finishes
+                confirmDelete(toDelete._id);
               }}
               className="bg-red-600 text-white hover:bg-red-500"
             >
@@ -232,12 +216,12 @@ useEffect(() => {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting…
                 </>
               ) : (
-                "Delete"
+                "Delete listing"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
-      </AlertDialog> */}
+      </AlertDialog>
     </main>
   );
 }
@@ -252,10 +236,10 @@ function Thumb({ src, alt }) {
       src={src}
       alt={alt}
       loading="lazy"
-      className="h-10 w-10 shrink-0 rounded-lg border border-white/10 object-cover"
+      className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover"
     />
   ) : (
-    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-[#4a3a26] to-[#2c2318] text-neutral-400">
+    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400">
       <Building2 className="h-4 w-4" aria-hidden />
     </span>
   );
@@ -263,7 +247,7 @@ function Thumb({ src, alt }) {
 
 function CategoryPill({ children }) {
   return (
-    <span className="badge badge-outline h-auto whitespace-nowrap rounded-full border-white/20 px-3 py-1 text-xs font-normal text-neutral-200">
+    <span className="badge badge-outline h-auto whitespace-nowrap rounded-full border-slate-200 px-3 py-1 text-xs font-normal text-slate-600">
       {children}
     </span>
   );
@@ -274,14 +258,14 @@ function RowActions({ id, onDelete }) {
     <div className="flex items-center gap-2">
       <Link
         href={EDIT_ROUTE(id)}
-        className="inline-flex h-9 items-center rounded-lg border border-white/15 px-4 text-xs font-semibold text-white transition hover:bg-white/5"
+        className="inline-flex h-9 items-center rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-[#E64833]"
       >
         Update
       </Link>
       <button
         type="button"
         onClick={onDelete}
-        className="inline-flex h-9 items-center rounded-lg border border-red-500/20 bg-red-500/15 px-4 text-xs font-semibold text-red-300 transition hover:bg-red-500/25"
+        className="inline-flex h-9 items-center rounded-lg border border-red-200 bg-red-50 px-4 text-xs font-semibold text-red-600 transition hover:bg-red-100"
       >
         Delete
       </button>
@@ -291,27 +275,17 @@ function RowActions({ id, onDelete }) {
 
 function LoadingState() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
       {[0, 1, 2, 3].map((i) => (
         <div
           key={i}
-          className="flex items-center gap-4 border-b border-white/5 p-4 last:border-0"
+          className="flex items-center gap-4 border-b border-slate-100 p-4 last:border-0"
         >
-          <div className="h-10 w-10 animate-pulse rounded-lg bg-white/10" />
-          <div className="h-4 w-40 animate-pulse rounded bg-white/10" />
-          <div className="ml-auto hidden h-4 w-24 animate-pulse rounded bg-white/10 sm:block" />
+          <div className="h-10 w-10 animate-pulse rounded-lg bg-slate-100" />
+          <div className="h-4 w-40 animate-pulse rounded bg-slate-100" />
+          <div className="ml-auto hidden h-4 w-24 animate-pulse rounded bg-slate-100 sm:block" />
         </div>
       ))}
-    </div>
-  );
-}
-
-function EmptyState({ title, text, action }) {
-  return (
-    <div className="rounded-2xl border border-dashed border-white/15 bg-neutral-900 px-6 py-14 text-center">
-      <h2 className="text-lg font-bold">{title}</h2>
-      <p className="mt-1 text-sm text-neutral-400">{text}</p>
-      <div className="mt-5 flex justify-center">{action}</div>
     </div>
   );
 }

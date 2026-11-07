@@ -84,17 +84,13 @@ export default function BookingModal({ studio, open, onOpenChange }) {
 
     setSubmitting(true);
     try {
-      console.log("Initiating booking...");
 
       const token = await getTokenFromClient();
-      console.log("Token retrieved:", token);
 
       const bookingData = {
         // IDs & Titles compatible with all views
-        studioId: studio._id,
         productId: studio._id,
         studioTitle: studio.title,
-        productName: studio.title,
         studioImage: studio.imageUrl,
         productImage: studio.imageUrl,
 
@@ -119,7 +115,6 @@ export default function BookingModal({ studio, open, onOpenChange }) {
         // Status
         status: "Pending",
       };
-      console.log("Booking data prepared:", bookingData);
 
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings`,
@@ -134,12 +129,11 @@ export default function BookingModal({ studio, open, onOpenChange }) {
       );
 
       const result = await res.json();
-      console.log("Booking response:", result);
 
       if (res.ok) {
         toast.success("Booking submitted successfully!");
         onOpenChange?.(false);
-        router.push("/my-bookings");
+        // router.push("/my-bookings");
       } else {
         toast.error(result.message || "Failed to submit booking.");
       }
@@ -174,7 +168,7 @@ export default function BookingModal({ studio, open, onOpenChange }) {
                   className="flex h-12 w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 text-left text-sm font-medium text-slate-800 outline-none transition focus-visible:ring-2 focus-visible:ring-[#E64833]/60"
                 >
                   {format(date, "EEE, d MMM yyyy")}
-                  <CalendarDays className="h-4 w-4 text-slate-400" aria-hidden />
+                  <CalendarDays className="h-4 w-4 text-slate-400 ml-2" aria-hidden />
                 </button>
               </PopoverTrigger>
               <PopoverContent

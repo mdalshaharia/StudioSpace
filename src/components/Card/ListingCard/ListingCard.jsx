@@ -11,7 +11,7 @@ import {
 import Link from 'next/link';
 
 const EDIT_ROUTE = (id) => `/add-studio?studioId=${id}`;
-const ListingCard = ({products, confirmDelete}) => {
+const ListingCard = ({products, onRequestDelete}) => {
     return (
         <div className="hidden overflow-hidden rounded-2xl border border-slate-200 bg-white md:block">
             <Table>
@@ -44,7 +44,7 @@ const ListingCard = ({products, confirmDelete}) => {
                             <TableCell>
                                 <RowActions
                                     id={s._id}
-                                    onDelete={() => confirmDelete(s._id)}
+                                    onDelete={() => onRequestDelete(s)}
                                 />
                             </TableCell>
                         </TableRow>

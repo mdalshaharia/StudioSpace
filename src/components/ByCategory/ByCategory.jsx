@@ -4,9 +4,10 @@ import ProductContext from "@/context/productContext";
 import Link from "next/link";
 import { useContext, useRef } from "react";
 import Image from "next/image";
+import { SkeletonRail } from "@/components/Skeletons";
 
 export default function ByCategory() {
-  const { products = [] } = useContext(ProductContext);
+  const { products = [], loading } = useContext(ProductContext);
   const uniqueCategoriesWithImages = Array.from(
     products.reduce((map, p) => {
       if (p.category && !map.has(p.category)) {
@@ -64,37 +65,43 @@ export default function ByCategory() {
           </div>
         </div>
 
-        <ul
-          ref={scrollerRef}
-          className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden"
-        >
-          {uniqueCategoriesWithImages.map((category, i) => (
-            <li
-              key={i}
-              className="w-[calc((100%-0.75rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-4rem)/5)]"
-            >
-              <Link
-                href={`/explore-studio`}
-                className="group relative flex h-36 w-full items-end overflow-hidden rounded-2xl border border-slate-200 p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833] hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70 sm:h-40 lg:h-44"
+        {loading ? (
+          <div className="mt-6">
+            <SkeletonRail count={5} />
+          </div>
+        ) : (
+          <ul
+            ref={scrollerRef}
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden"
+          >
+            {uniqueCategoriesWithImages.map((category, i) => (
+              <li
+                key={i}
+                className="w-[calc((100%-0.75rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-4rem)/5)]"
               >
-                {category.imageUrl && (
-                  <Image
-                    src={category.imageUrl}
-                    alt={category.category || category.title || "Category"}
-                    fill
-                    sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                  />
-                )}
-                {/* gradient vignette */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#244855]/20 via-[#244855]/5 to-transparent" />
-                <span className="relative z-10 text-xs font-bold uppercase tracking-wider text-white transition duration-200 group-hover:text-[#E64833] sm:text-sm">
-                  {category.category || category.title}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+                <Link
+                  href={`/explore-studio`}
+                  className="group relative flex h-36 w-full items-end overflow-hidden rounded-2xl border border-slate-200 p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833] hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70 sm:h-40 lg:h-44"
+                >
+                  {category.imageUrl && (
+                    <Image
+                      src={category.imageUrl}
+                      alt={category.category || category.title || "Category"}
+                      fill
+                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  )}
+                  {/* gradient vignette */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#244855]/20 via-[#244855]/5 to-transparent" />
+                  <span className="relative z-10 text-xs font-bold uppercase tracking-wider text-white transition duration-200 group-hover:text-[#E64833] sm:text-sm">
+                    {category.category || category.title}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   );

@@ -1,6 +1,7 @@
 import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { ProductProvider } from "@/context/productContext";
+import { Toaster } from "@/components/ui/sonner";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
         <ProductProvider>
           {children}
         </ProductProvider>
+        <Toaster position="bottom-right" richColors />
       </body>
     </html>
   );

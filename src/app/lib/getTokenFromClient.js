@@ -8,7 +8,6 @@ export const getTokenFromClient = async () => {
       console.error("Failed to retrieve token:", error);
       return null;
     }
-console.log(data.token)
     return data?.token || null;
   } catch (err) {
     console.error("Error fetching token:", err);

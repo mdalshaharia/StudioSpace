@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { authClient, signOut, useSession } from "@/app/lib/auth-client";
 import { usePathname, useRouter } from "next/navigation";
@@ -75,7 +75,7 @@ function Logo({ onClick }) {
   );
 }
 
-export default function Navbar() {
+function NavbarInner() {
   const { data: session, isPending } = useSession();
   const user = session?.user ?? null;
   const router = useRouter();
@@ -350,5 +350,19 @@ function UserAvatar({ user }) {
         {initials(user.name)}
       </AvatarFallback>
     </Avatar>
+  );
+}
+
+export default function Navbar() {
+  return (
+    <Suspense
+      fallback={
+        <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white shadow-xs">
+          <div className="navbar mx-auto min-h-16 max-w-7xl px-4 sm:px-6 lg:px-8" />
+        </header>
+      }
+    >
+      <NavbarInner />
+    </Suspense>
   );
 }

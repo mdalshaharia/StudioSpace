@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect, use, Suspense } from "react";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { useState, useEffect, use } from "react";
+import { Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { SkeletonDetail } from "@/components/Skeletons";
 import { useSession } from "@/app/lib/auth-client";
+import { toast } from "sonner";
 import BookingModal from "@/components/Modal/BookingModal";
 
 const Stars = ({ value = 0 }) => (
@@ -16,24 +18,14 @@ const Stars = ({ value = 0 }) => (
     {[1, 2, 3, 4, 5].map((n) => (
       <Star
         key={n}
-        className={`h-3 w-3 ${n <= Math.round(value) ? "fill-amber-400 text-amber-400" : "text-neutral-600"}`}
+        className={`h-3 w-3 ${n <= Math.round(value) ? "fill-[#E64833] text-[#E64833]" : "text-slate-300"}`}
       />
     ))}
   </span>
 );
 
 export default function StudioDetailsPage({ params }) {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-[60vh] items-center justify-center bg-neutral-950 text-white">
-          <p className="text-sm text-neutral-400">Loading studio details...</p>
-        </div>
-      }
-    >
-      <StudioDetails params={params} />
-    </Suspense>
-  );
+  return <StudioDetails params={params} />;
 }
 
 function StudioDetails({ params }) {
@@ -56,7 +48,7 @@ function StudioDetails({ params }) {
           setProduct(data);
         }
       } catch (err) {
-        console.error('Failed to fetch product:', err);
+        toast.error("Could not load the studio details. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -64,12 +56,14 @@ function StudioDetails({ params }) {
     fetchStudio();
   }, [slug]);
 
+  /* skeletons while the studio data loads — the route loading.jsx covers the
+     initial page render, this covers the client fetch that follows it */
   if (loading) {
-    return <div className="p-6 text-center">Loading studio details...</div>;
+    return <SkeletonDetail />;
   }
 
   if (!product) {
-    return <div className="p-6 text-center text-red-500">দুঃখিত, পণ্যটি পাওয়া যায়নি।</div>;
+    return <div className="p-6 text-center text-red-500">OOOOOps!! Something Went Wrong</div>;
   }
 
   const {
@@ -92,37 +86,37 @@ function StudioDetails({ params }) {
   const images = [imageUrl, ...gallery].filter(Boolean);
 
   return (
-    <main className="bg-neutral-950 text-white">
+    <main className="bg-white text-slate-800">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_340px] lg:items-start lg:px-8">
         {/* ============================ left ============================ */}
         <div className="min-w-0">
           {/* gallery */}
           {images.length > 0 && (
             <>
-              <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-neutral-900">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                 <img src={images[0]} alt={title} className="h-full w-full object-cover" />
               </div>
 
             </>
           )}
-          <Badge variant="outline" className="mt-6 rounded-full border-white/20 text-xs font-normal text-neutral-200">
+          <Badge variant="outline" className="mt-6 rounded-full border-[#E64833]/20 bg-[#E64833]/5 text-xs font-medium text-[#E64833]">
             {category}
           </Badge>
-          <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">{title}</h1>
-          <p className="mt-2 flex items-center gap-2 text-sm text-neutral-400">
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-[#244855] sm:text-4xl">{title}</h1>
+          <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
             {location}
             {rating && (
               <>
                 <span aria-hidden>·</span>
-                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                <span className="font-semibold text-white">{rating}</span>
+                <Star className="h-3.5 w-3.5 fill-[#E64833] text-[#E64833]" />
+                <span className="font-semibold text-[#E64833]">{rating}</span>
               </>
             )}
           </p>
 
           {/* overview */}
           <Section title="Overview">
-            <p className="text-sm leading-relaxed text-neutral-300">{overview}</p>
+            <p className="text-sm leading-relaxed text-slate-600">{overview}</p>
           </Section>
 
           {/* specs */}
@@ -142,7 +136,7 @@ function StudioDetails({ params }) {
                   <Badge
                     key={a}
                     variant="outline"
-                    className="rounded-full border-white/15 text-xs font-normal text-neutral-200"
+                    className="rounded-full border-slate-200 text-xs font-normal text-slate-700"
                   >
                     {a}
                   </Badge>
@@ -153,16 +147,16 @@ function StudioDetails({ params }) {
 
           {/* host */}
           <Section title="Hosted by">
-            <Card className="border-white/10 bg-neutral-900 py-0 text-white">
+            <Card className="border-slate-200 bg-white py-0 text-slate-800 shadow-sm">
               <CardContent className="flex items-center gap-3 p-4">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-amber-400/20 font-semibold text-amber-300">
+                  <AvatarFallback className="bg-[#E64833]/10 font-semibold text-[#E64833]">
                     {ownerName?.[0]?.toUpperCase() ?? "H"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{ownerName}</p>
-                  <p className="truncate text-xs text-neutral-400">{ownerEmail}</p>
+                  <p className="truncate text-sm font-semibold text-[#244855]">{ownerName}</p>
+                  <p className="truncate text-xs text-slate-500">{ownerEmail}</p>
                 </div>
               </CardContent>
             </Card>
@@ -171,18 +165,18 @@ function StudioDetails({ params }) {
           {/* reviews */}
           <Section title="Reviews">
             {reviews.length === 0 ? (
-              <p className="text-sm text-neutral-400">No reviews yet.</p>
+              <p className="text-sm text-slate-500">No reviews yet.</p>
             ) : (
               <ul className="space-y-3">
                 {reviews.map((r, i) => (
                   <li key={i}>
-                    <Card className="border-white/10 bg-neutral-900 py-0 text-white">
+                    <Card className="border-slate-200 bg-white py-0 text-slate-800 shadow-sm">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-sm font-semibold">{r.name}</p>
+                          <p className="text-sm font-semibold text-[#244855]">{r.name}</p>
                           <Stars value={r.rating} />
                         </div>
-                        <p className="mt-1.5 text-sm text-neutral-300">{r.comment}</p>
+                        <p className="mt-1.5 text-sm text-slate-600">{r.comment}</p>
                       </CardContent>
                     </Card>
                   </li>
@@ -198,11 +192,11 @@ function StudioDetails({ params }) {
 
         {/* ============================ right: booking card ============================ */}
         <aside className="lg:sticky lg:top-24">
-          <Card className="border-white/10 bg-neutral-900 py-0 text-white">
+          <Card className="border-slate-200 bg-white py-0 text-slate-800 shadow-sm">
             <CardContent className="p-5">
               <p>
-                <span className="text-3xl font-extrabold">${hourlyRate}</span>
-                <span className="ml-1.5 text-sm text-amber-400">per hour</span>
+                <span className="text-3xl font-extrabold text-[#244855]">${hourlyRate}</span>
+                <span className="ml-1.5 text-sm text-[#E64833]">per hour</span>
               </p>
 
               <dl className="mt-4 space-y-2 text-sm">
@@ -211,16 +205,16 @@ function StudioDetails({ params }) {
                 <Row label="Location" value={location} />
               </dl>
 
-              <Separator className="my-4 bg-white/10" />
+              <Separator className="my-4 bg-slate-100" />
               <Button
                 onClick={() => setOpen(true)}
-                disabled={loading || isPending}
-                className="h-11 w-full rounded-xl bg-amber-400 font-semibold text-neutral-900 hover:bg-amber-300 disabled:opacity-50"
+                disabled={isPending}
+                className="h-11 w-full rounded-xl bg-[#E64833] font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b] disabled:opacity-50"
               >
-                {loading ? "Processing..." : "Book Workspace Now"}
+                Book Workspace Now
               </Button>
-              <p className="mt-3 text-center text-[11px] text-neutral-400">
-                Opens the booking window. Status starts as Pending.
+              <p className="mt-3 text-center text-[11px] text-slate-500">
+               Bookings Start Here.
               </p>
             </CardContent>
           </Card>
@@ -235,7 +229,7 @@ function StudioDetails({ params }) {
 function Section({ title, children }) {
   return (
     <section className="mt-8">
-      <h2 className="mb-3 text-lg font-bold">{title}</h2>
+      <h2 className="mb-3 text-lg font-bold text-[#244855]">{title}</h2>
       {children}
     </section>
   );
@@ -243,9 +237,9 @@ function Section({ title, children }) {
 
 function Spec({ label, value }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-neutral-900 p-3">
-      <p className="text-[11px] text-neutral-400">{label}</p>
-      <p className="mt-0.5 text-sm font-bold">{value}</p>
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <p className="text-[11px] text-slate-500">{label}</p>
+      <p className="mt-0.5 text-sm font-bold text-[#244855]">{value}</p>
     </div>
   );
 }
@@ -253,8 +247,8 @@ function Spec({ label, value }) {
 function Row({ label, value }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="text-neutral-400">{label}</dt>
-      <dd className="text-right font-medium text-neutral-100">{value}</dd>
+      <dt className="text-slate-500">{label}</dt>
+      <dd className="text-right font-medium text-slate-800">{value}</dd>
     </div>
   );
 }

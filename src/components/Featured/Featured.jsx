@@ -4,9 +4,10 @@ import { useContext } from "react";
 import ProductContext from "@/context/productContext";
 import Link from "next/link";
 import FeaturedCard from "./FeaturedCard";
+import { SkeletonGrid } from "@/components/Skeletons";
 
 export default function Featured() {
-  const { products = [] } = useContext(ProductContext);
+  const { products = [], loading } = useContext(ProductContext);
   const featured = [...products]
     .sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0))
     .slice(0, 6);
@@ -32,13 +33,19 @@ export default function Featured() {
           </Link>
         </div>
 
-        <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((studio, i) => (
-            <li key={studio._id ?? i}>
-              <FeaturedCard studio={studio} />
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <div className="mt-8">
+            <SkeletonGrid count={6} />
+          </div>
+        ) : (
+          <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((studio, i) => (
+              <li key={studio._id ?? i}>
+                <FeaturedCard studio={studio} />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   );

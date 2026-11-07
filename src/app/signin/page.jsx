@@ -6,12 +6,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { signUp, signIn } from "../lib/auth-client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import Navbar from "@/components/Navbar/Navbar";
+import Footer from "@/components/Footer/Footer";
+import { LoaderScreen } from "@/components/Skeletons";
 // import { auth, googleProvider } from "@/lib/firebase";
 
 /* ------------------------------ helpers ------------------------------ */
@@ -35,9 +40,15 @@ function GoogleIcon() {
 export default function LoginPage() {
     // useSearchParams needs a Suspense boundary in the App Router
     return (
-        <Suspense fallback={null}>
-            <SignIn />
-        </Suspense>
+        <main className="flex min-h-screen flex-col bg-white text-slate-800">
+            <Navbar />
+            <div className="flex-1">
+                <Suspense fallback={<LoaderScreen />}>
+                    <SignIn />
+                </Suspense>
+            </div>
+            <Footer />
+        </main>
     );
 }
 
@@ -62,16 +73,14 @@ function SignIn() {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const ResData = Object.fromEntries(formData.entries());
-        console.log('clicked')
         try {
             setLoading(true);
-            setErrors('');
+            setErrors({});
 
             const { data, error } = await signIn.email({
                 email: ResData.email,
                 password: ResData.password,
             });
-            console.log(data)
             if (data) {
                 toast.success("লগইন সফল হয়েছে। হোম পেজে নেওয়া হচ্ছে...");
                 setTimeout(() => {
@@ -80,18 +89,18 @@ function SignIn() {
                 }, 3000);
             }
             if (error) {
-                // console.log("Sign-in error:", error.message);
                 if (error.message === 'Invalid email or password') {
-                    setErrors("ইমেইল বা পাসওয়ার্ড ভুল হয়েছে। আবার চেষ্টা করুন।");
+                    setErrors({ form: "ইমেইল বা পাসওয়ার্ড ভুল হয়েছে। আবার চেষ্টা করুন।" });
                 } else {
-                    setErrors(error.message || "লগইন করতে সমস্যা হচ্ছে।");
+                    setErrors({ form: error.message || "লগইন করতে সমস্যা হচ্ছে।" });
                 }
+                toast.error("লগইন করতে সমস্যা হয়েছে।");
                 return;
             }
 
         } catch (err) {
-            console.error("Unexpected error:", err);
-            setError("কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।");
+            setErrors({ form: "কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।" });
+            toast.error("কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।");
         } finally {
             setLoading(false);
         }
@@ -107,20 +116,19 @@ function SignIn() {
                 provider: "google",
                 callbackURL: "/",
             });
-            console.log(data)
             if (data) {
                 toast.success("গুগল লগইন সফল হয়েছে। হোম পেজে নেওয়া হচ্ছে...");
             }
             if (error) {
-                console.error("Google sign-in error:", error);
                 setErrors({ form: error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।" });
+                toast.error(error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।");
                 setGoogleLoading(false); // Stop loading if it failed to redirect
                 return;
             }
 
         } catch (err) {
-            console.error("Unexpected error during social login:", err);
             setErrors({ form: "কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
+            toast.error("কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।");
         } finally {
             setGoogleLoading(false);
         }
@@ -128,31 +136,24 @@ function SignIn() {
 
     /* ------------------------ forgot password ------------------------ */
     const handleReset = async () => {
-        console.log('clicked')
+        toast.info("পাসওয়ার্ড রিসেট শীঘ্রই আসছে।");
     };
 
     return (
-        <main className="">
-            <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-12">
-                {/* ---------------- left: visual panel (desktop only) ---------------- */}
-                <aside className="relative hidden min-h-[520px] overflow-hidden rounded-3xl bg-gradient-to-br from-[#2b2620] to-[#54402a] lg:block">
-                    {/* swap for <Image src=... fill className="object-cover" /> when you have a photo */}
-                    <div className="absolute inset-x-0 bottom-0 p-8">
-                        <h2 className="text-3xl font-extrabold tracking-tight">Your next shoot starts here.</h2>
-                        <p className="mt-2 text-sm text-neutral-200">
-                            Book creative studios by the hour or list your own.
-                        </p>
-                    </div>
-                </aside>
-
-                {/* ---------------------- right: form card ---------------------- */}
-                <section className="rounded-3xl border border-white/10 bg-neutral-900 p-6 sm:p-8">
-                    <h1 className="text-3xl font-extrabold tracking-tight">Sign in</h1>
+        <section className="mx-auto w-full max-w-lg px-4 py-8 sm:px-6 sm:py-12">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                <div className="flex justify-center mb-4">
+                    <span className="grid h-16 w-16 place-items-center rounded-2xl bg-[#244855]/10">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/brad-logo.png" alt="" className="h-9 w-9 object-contain" />
+                    </span>
+                </div>
+                <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] text-center">Sign in</h1>
 
                     <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
                         {/* email */}
                         <div className="space-y-1.5">
-                            <Label htmlFor="email" className="text-xs text-amber-400/90">
+                            <Label htmlFor="email" className="text-xs font-semibold text-[#E64833]">
                                 Email
                             </Label>
                             <Input
@@ -162,13 +163,13 @@ function SignIn() {
                                 autoComplete="email"
                                 placeholder="you@email.com"
                                 disabled={busy}
-                                className="h-11 rounded-xl border-white/10 bg-neutral-950 text-white placeholder:text-neutral-500 focus-visible:ring-amber-400/60"
+                                className="h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60"
                             />
                         </div>
 
                         {/* password */}
                         <div className="space-y-1.5">
-                            <Label htmlFor="password" className="text-xs text-amber-400/90">
+                            <Label htmlFor="password" className="text-xs font-semibold text-[#E64833]">
                                 Password
                             </Label>
                             <div className="relative">
@@ -179,19 +180,26 @@ function SignIn() {
                                     autoComplete="current-password"
                                     placeholder="Your password"
                                     disabled={busy}
-                                    className="h-11 rounded-xl border-white/10 bg-neutral-950 pr-11 text-white placeholder:text-neutral-500 focus-visible:ring-amber-400/60"
+                                    className="h-11 rounded-xl border-slate-200 bg-slate-50 pr-11 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((s) => !s)}
                                     aria-label={showPassword ? "Hide password" : "Show password"}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition hover:text-white"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
                         </div>
-                        {errors && <p className="mt-1.5 text-xs text-red-400">{errors.form}</p>}
+                        {errors?.form && (
+                            <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-700">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription className="text-red-600">
+                                    {errors.form}
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
                         {/* remember + forgot */}
                         <div className="flex items-center justify-between gap-3">
@@ -201,9 +209,9 @@ function SignIn() {
                                     checked={remember}
                                     onCheckedChange={(v) => setRemember(v === true)}
                                     disabled={busy}
-                                    className="border-white/30 data-[state=checked]:border-amber-400 data-[state=checked]:bg-amber-400 data-[state=checked]:text-neutral-900"
+                                    className="border-slate-300 data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
                                 />
-                                <Label htmlFor="remember" className="cursor-pointer text-xs font-normal text-neutral-200">
+                                <Label htmlFor="remember" className="cursor-pointer text-xs font-normal text-slate-600">
                                     Remember me
                                 </Label>
                             </div>
@@ -211,7 +219,7 @@ function SignIn() {
                                 type="button"
                                 onClick={handleReset}
                                 disabled={busy || resetLoading}
-                                className="text-xs text-amber-400 transition hover:text-amber-300 disabled:opacity-50"
+                                className="text-xs font-semibold text-[#E64833] transition hover:text-[#cf3e2b] disabled:opacity-50"
                             >
                                 {resetLoading ? "Sending…" : "Forgot password?"}
                             </button>
@@ -221,7 +229,7 @@ function SignIn() {
                         <Button
                             type="submit"
                             disabled={busy}
-                            className="h-11 w-full rounded-xl bg-amber-400 font-semibold text-neutral-900 hover:bg-amber-300"
+                            className="h-11 w-full rounded-xl bg-[#E64833] font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b]"
                         >
                             {loading ? (
                                 <>
@@ -235,9 +243,9 @@ function SignIn() {
 
                     {/* divider */}
                     <div className="my-5 flex items-center gap-3">
-                        <Separator className="flex-1 bg-white/10" />
-                        <span className="text-xs text-neutral-400">or</span>
-                        <Separator className="flex-1 bg-white/10" />
+                        <Separator className="flex-1 bg-slate-100" />
+                        <span className="text-xs text-slate-400">or</span>
+                        <Separator className="flex-1 bg-slate-100" />
                     </div>
 
                     {/* google */}
@@ -246,7 +254,7 @@ function SignIn() {
                         variant="outline"
                         onClick={handleGoogle}
                         disabled={busy}
-                        className="h-11 w-full rounded-xl border-white/15 bg-neutral-900 font-semibold text-white hover:bg-white/5 hover:text-white"
+                        className="h-11 w-full rounded-xl border-slate-200 bg-white font-semibold text-slate-800 hover:bg-slate-100 hover:text-[#244855]"
                     >
                         {googleLoading ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -258,17 +266,16 @@ function SignIn() {
                         Continue with Google
                     </Button>
 
-                    <p className="mt-6 text-sm text-neutral-400">
+                    <p className="mt-6 text-sm text-slate-500">
                         New to StudioSpace?{" "}
                         <Link
                             href='/signup'
-                            className="font-semibold text-amber-400 transition hover:text-amber-300"
+                            className="font-semibold text-[#E64833] transition hover:text-[#cf3e2b]"
                         >
                             Create an account
                         </Link>
                     </p>
-                </section>
-            </div>
-        </main>
+                </div>
+        </section>
     );
 }

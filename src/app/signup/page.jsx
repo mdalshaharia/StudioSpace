@@ -5,8 +5,10 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Check, Eye, EyeOff, Loader2, X } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { signUp, signIn } from "../lib/auth-client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import Navbar from "@/components/Navbar/Navbar";
+import Footer from "@/components/Footer/Footer";
+import { LoaderScreen } from "@/components/Skeletons";
 
 
 /* ------------------------------ helpers ------------------------------ */
@@ -64,15 +69,21 @@ function GoogleIcon() {
 }
 
 const inputCls =
-    "h-11 rounded-xl border-white/10 bg-neutral-950 text-white placeholder:text-neutral-500 focus-visible:ring-amber-400/60";
+    "h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60";
 
 /* ------------------------------- page -------------------------------- */
 
 export default function RegisterPage() {
     return (
-        <Suspense fallback={null}>
-            <Register />
-        </Suspense>
+        <main className="flex min-h-screen flex-col bg-white text-slate-800">
+            <Navbar />
+            <div className="flex-1">
+                <Suspense fallback={<LoaderScreen />}>
+                    <Register />
+                </Suspense>
+            </div>
+            <Footer />
+        </main>
     );
 }
 
@@ -95,25 +106,24 @@ function Register() {
         const formData = new FormData(e.currentTarget);
         const ResData = Object.fromEntries(formData.entries());
 
-        console.log(ResData)
-        // console.log(data, error)
-
         if (ResData.password.length < 8) {
-            return setErrors({ form: "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।" });
+            setErrors({ form: "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।" });
+            toast.error("পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে।");
+            return;
         }
         if (ResData.password !== ResData.confirmPassword) {
-            return setErrors({ form: "পাসওয়ার্ড দুটি মিলছে না।" });
+            setErrors({ form: "পাসওয়ার্ড দুটি মিলছে না।" });
+            toast.error("পাসওয়ার্ড দুটি মিলছে না।");
+            return;
         }
         try {
             setLoading(true);
-            // setErrors('');
+            setErrors({});
             const { data, error } = await signUp.email({
                 name: ResData.name,
                 email: ResData.email,
                 password: ResData.password,
             });
-            console.log(error)
-            console.log(data)
             if (data?.token || data?.user) {
                 toast.success("রেজিস্ট্রেশন সফল হয়েছে, লগইন করুন");
                 router.push('/signin')
@@ -121,15 +131,18 @@ function Register() {
             if (error) {
                 if (error.message === 'User already exists. Use another email.') {
                     setErrors({ form: 'এই ইমেইল দিয়ে একটি অ্যাকাউন্ট রয়েছে, অন্যটি চেষ্টা করুন।' });
+                    toast.error('এই ইমেইল দিয়ে একটি অ্যাকাউন্ট রয়েছে, অন্যটি চেষ্টা করুন।');
                 } else {
                     setErrors({ form: error.message || "কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।" });
+                    toast.error(error.message || "কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।");
                 }
                 return
 
             }
         }
-        catch (error) {
-            console.log(error)
+        catch (err) {
+            setErrors({ form: "কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।" });
+            toast.error("কিছু একটা সমস্যা হয়েছে । আবার চেষ্টা করুন।");
         } finally {
             setLoading(false);
         };
@@ -138,7 +151,6 @@ function Register() {
 
     /* ------------------------------ google ------------------------------ */
     const handleGoogle = async () => {
-        console.log('clicked')
         try {
             setGoogleLoading(true);
             setErrors({});
@@ -147,43 +159,34 @@ function Register() {
                 provider: "google",
                 callbackURL: "/",
             });
-            console.log(data)
             if (data) {
                 toast.success("গুগল লগইন সফল হয়েছে। হোম পেজে নেওয়া হচ্ছে...");
             }
             if (error) {
-                console.error("Google sign-in error:", error);
                 setErrors({ form: error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।" });
+                toast.error(error.message || "গুগল লগইন করতে সমস্যা হচ্ছে।");
                 setGoogleLoading(false); // Stop loading if it failed to redirect
                 return;
             }
 
         } catch (err) {
-            console.error("Unexpected error during social login:", err);
             setErrors({ form: "কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।" });
+            toast.error("কিছু একটা সমস্যা হয়েছে। আবার চেষ্টা করুন।");
         } finally {
             setGoogleLoading(false);
         }
     };
 
     return (
-        <main className="bg-neutral-950 text-white">
-            <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-12">
-                {/* ---------------- left: visual panel (desktop only) ---------------- */}
-                <aside className="relative hidden min-h-[640px] overflow-hidden rounded-3xl bg-gradient-to-br from-[#2b2620] to-[#54402a] lg:block">
-                    <div className="absolute inset-x-0 bottom-0 p-8">
-                        <h2 className="text-3xl font-extrabold tracking-tight">
-                            Book it. List it. Make something.
-                        </h2>
-                        <p className="mt-2 text-sm text-neutral-200">
-                            Join StudioSpace to book creative studios by the hour or earn by listing your own.
-                        </p>
-                    </div>
-                </aside>
-
-                {/* ---------------------- right: form card ---------------------- */}
-                <section className="rounded-3xl border border-white/10 bg-neutral-900 p-6 sm:p-8">
-                    <h1 className="text-3xl font-extrabold tracking-tight">Create account</h1>
+        <section className="mx-auto w-full max-w-lg px-4 py-8 sm:px-6 sm:py-12">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                <div className="flex justify-center mb-4">
+                    <span className="grid h-16 w-16 place-items-center rounded-2xl bg-[#244855]/10">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/brad-logo.png" alt="" className="h-9 w-9 object-contain" />
+                    </span>
+                </div>
+                <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] text-center">Create account</h1>
 
                     <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                         {/* name */}
@@ -230,26 +233,11 @@ function Register() {
                                     type="button"
                                     onClick={() => setShowPw((s) => !s)}
                                     aria-label={showPw ? "Hide password" : "Show password"}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition hover:text-white"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
                                 >
                                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
                             </div>
-
-                            {/* {form.password && (
-                                <ul className="mt-2 space-y-1">
-                                    {rules.map((r) => (
-                                        <li
-                                            key={r.label}
-                                            className={`flex items-center gap-2 text-xs ${r.ok ? "text-emerald-400" : "text-neutral-500"
-                                                }`}
-                                        >
-                                            {r.ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
-                                            {r.label}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )} */}
                         </Field>
 
                         {/* confirm */}
@@ -265,7 +253,14 @@ function Register() {
                                 name="confirmPassword"
                             />
                         </Field>
-                        {errors.form && <p className="mt-1.5 text-xs text-red-400">{errors.form}</p>}
+                        {errors.form && (
+                            <Alert variant="destructive" className="mt-1.5 border-red-200 bg-red-50 text-red-700">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription className="text-red-600">
+                                    {errors.form}
+                                </AlertDescription>
+                            </Alert>
+                        )}
 
                         {/* terms */}
                         <div>
@@ -278,27 +273,27 @@ function Register() {
                                         if (errors.agree) setErrors((p) => ({ ...p, agree: undefined }));
                                     }}
                                     disabled={busy}
-                                    className="mt-0.5 border-white/30 data-[state=checked]:border-amber-400 data-[state=checked]:bg-amber-400 data-[state=checked]:text-neutral-900"
+                                    className="mt-0.5 border-slate-300 data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
                                 />
-                                <Label htmlFor="agree" className="cursor-pointer text-xs font-normal leading-relaxed text-neutral-300">
+                                <Label htmlFor="agree" className="cursor-pointer text-xs font-normal leading-relaxed text-slate-600">
                                     I agree to the{" "}
-                                    <Link href="/terms" className="text-amber-400 hover:text-amber-300">
+                                    <Link href="/terms" className="font-semibold text-[#E64833] hover:text-[#cf3e2b]">
                                         Terms
                                     </Link>{" "}
                                     and{" "}
-                                    <Link href="/privacy" className="text-amber-400 hover:text-amber-300">
+                                    <Link href="/privacy" className="font-semibold text-[#E64833] hover:text-[#cf3e2b]">
                                         Privacy Policy
                                     </Link>
                                     .
                                 </Label>
                             </div>
-                            {errors.agree && <p className="mt-1.5 text-xs text-red-400">{errors.agree}</p>}
+                            {errors.agree && <p className="mt-1.5 text-xs text-red-600">{errors.agree}</p>}
                         </div>
 
                         <Button
                             type="submit"
                             disabled={busy}
-                            className="h-11 w-full rounded-xl bg-amber-400 font-semibold text-neutral-900 hover:bg-amber-300"
+                            className="h-11 w-full rounded-xl bg-[#E64833] font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b]"
                         >
                             {loading ? (
                                 <>
@@ -311,9 +306,9 @@ function Register() {
                     </form>
 
                     <div className="my-5 flex items-center gap-3">
-                        <Separator className="flex-1 bg-white/10" />
-                        <span className="text-xs text-neutral-400">or</span>
-                        <Separator className="flex-1 bg-white/10" />
+                        <Separator className="flex-1 bg-slate-100" />
+                        <span className="text-xs text-slate-400">or</span>
+                        <Separator className="flex-1 bg-slate-100" />
                     </div>
 
                     <Button
@@ -321,7 +316,7 @@ function Register() {
                         variant="outline"
                         onClick={handleGoogle}
                         disabled={busy}
-                        className="h-11 w-full rounded-xl border-white/15 bg-neutral-900 font-semibold text-white hover:bg-white/5 hover:text-white"
+                        className="h-11 w-full rounded-xl border-slate-200 bg-white font-semibold text-slate-800 hover:bg-slate-100 hover:text-[#244855]"
                     >
                         {googleLoading ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -333,18 +328,17 @@ function Register() {
                         Continue with Google
                     </Button>
 
-                    <p className="mt-6 text-sm text-neutral-400">
+                    <p className="mt-6 text-sm text-slate-500">
                         Already have an account?{" "}
                         <Link
-                            href={`/login${redirectTo !== "/dashboard" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
-                            className="font-semibold text-amber-400 transition hover:text-amber-300"
+                            href={`/signin${redirectTo !== "/dashboard" ? `?redirect=${encodeURIComponent(redirectTo)}` : ""}`}
+                            className="font-semibold text-[#E64833] transition hover:text-[#cf3e2b]"
                         >
                             Sign in
                         </Link>
                     </p>
-                </section>
-            </div>
-        </main>
+                </div>
+        </section>
     );
 }
 
@@ -352,11 +346,11 @@ function Register() {
 function Field({ id, label, error, children }) {
     return (
         <div className="space-y-1.5">
-            <Label htmlFor={id} className="text-xs text-amber-400/90">
+            <Label htmlFor={id} className="text-xs font-semibold text-[#E64833]">
                 {label}
             </Label>
             {children}
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            {error && <p className="text-xs text-red-600">{error}</p>}
         </div>
     );
 }

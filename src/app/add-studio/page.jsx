@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useSession } from "../lib/auth-client";
 import { getTokenFromClient } from "../lib/getTokenFromClient";
+import { LoaderScreen } from "@/components/Skeletons";
 
 /* ------------------------------ config ------------------------------ */
 
@@ -66,17 +67,9 @@ const isUrl = (v) => {
 };
 
 const inputCls =
-  "h-11 rounded-xl border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-amber-500/50";
+  "h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60";
 
 /* ------------------------------- page -------------------------------- */
-
-function LoaderScreen() {
-  return (
-    <main className="grid min-h-[60vh] place-items-center bg-white">
-      <Loader2 className="h-6 w-6 animate-spin text-amber-500" aria-label="Loading" />
-    </main>
-  );
-}
 
 export default function AddStudioPage() {
   return (
@@ -89,6 +82,7 @@ export default function AddStudioPage() {
 function AddStudioForm() {
   const router = useRouter();
   const studioId = useSearchParams().get("studioId");
+
   const isEdit = !!studioId;
 
   const { data: session, isPending } = useSession();
@@ -108,7 +102,7 @@ function AddStudioForm() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}?userID=${session.user.id}`, {
           cache: "no-store",
         });
         if (!res.ok) throw new Error();
@@ -196,20 +190,24 @@ function AddStudioForm() {
         gallery: form.gallery,
         amenities: form.amenities,
         overview: form.overview.trim(),
-        rating: 4.6,
-        reviews: [],
         ownerName: session?.user?.name ?? "",
         ownerEmail: session?.user?.email ?? "",
         ownerId: session?.user?.id ?? "",
         status: "active",
-        createdAt: new Date().toISOString(),
       };
+      // only set these on create — overwriting them on edit would wipe the
+      // studio's existing rating, reviews and creation date
+      if (!isEdit) {
+        payload.rating = 4.6;
+        payload.reviews = [];
+        payload.createdAt = new Date().toISOString();
+      }
 
       // step 1: save or update the studio
       const studioRes = await fetch(
         isEdit
-          ? `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}`
-          : `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios`,
+        ? `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}`
+        : `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios`,
         {
           method: isEdit ? "PUT" : "POST",
           headers: {
@@ -257,8 +255,6 @@ function AddStudioForm() {
       }
     }
 
-    console.log("res from my-listings:", createdStudio);
-    console.log("res from stdio:", createdStudio);
     toast.success(isEdit ? "Studio updated successfully!" : "Studio added successfully!");
     setSubmitting(false);
     router.push(LISTINGS_ROUTE);
@@ -269,17 +265,17 @@ function AddStudioForm() {
   }
 
   return (
-    <main className="bg-white text-neutral-900">
+    <main className="bg-white text-slate-800">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <h1 className="text-3xl font-extrabold tracking-tight">
+        <h1 className="text-3xl font-extrabold tracking-tight text-[#244855]">
           {isEdit ? "Update your studio" : "Add a new studio"}
         </h1>
-        <p className="mt-1 text-sm text-neutral-500">Tell creators about your space.</p>
+        <p className="mt-1 text-sm text-slate-500">Tell creators about your space.</p>
 
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="mt-6 space-y-5 rounded-3xl border border-neutral-200 bg-neutral-50 p-5 shadow-sm sm:p-8"
+          className="mt-6 space-y-5 rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm sm:p-8"
         >
           {/* title + category */}
           <div className="grid gap-5 sm:grid-cols-2">
@@ -428,7 +424,7 @@ function AddStudioForm() {
 
           {/* amenities */}
           <fieldset className="space-y-2">
-            <legend className="text-xs font-medium text-amber-700">Amenities</legend>
+            <legend className="text-xs font-semibold text-[#E64833]">Amenities</legend>
             <div className="flex flex-wrap gap-2">
               {AMENITIES.map((a) => {
                 const checked = form.amenities.includes(a);
@@ -439,8 +435,8 @@ function AddStudioForm() {
                     htmlFor={id}
                     className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition ${
                       checked
-                        ? "border-amber-500 bg-amber-50 text-amber-800"
-                        : "border-neutral-300 bg-white text-neutral-700 hover:border-amber-400"
+                        ? "border-[#E64833] bg-[#E64833]/5 font-semibold text-[#E64833]"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-[#E64833]/60 hover:text-[#E64833]"
                     }`}
                   >
                     <Checkbox
@@ -448,7 +444,7 @@ function AddStudioForm() {
                       checked={checked}
                       onCheckedChange={(v) => toggleAmenity(a, v === true)}
                       disabled={submitting}
-                      className="h-3.5 w-3.5 border-neutral-400 data-[state=checked]:border-amber-500 data-[state=checked]:bg-amber-500 data-[state=checked]:text-white"
+                      className="h-3.5 w-3.5 border-slate-300 data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
                     />
                     {a}
                   </label>
@@ -467,7 +463,7 @@ function AddStudioForm() {
               onChange={updateField("overview")}
               disabled={submitting}
               aria-invalid={!!errors.overview}
-              className="rounded-xl border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-amber-500/50"
+              className="rounded-xl border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60"
             />
           </Field>
 
@@ -478,7 +474,7 @@ function AddStudioForm() {
                 id="ownerName"
                 readOnly
                 value={session?.user?.name ?? ""}
-                className={`${inputCls} cursor-not-allowed bg-neutral-100 text-neutral-600`}
+                className={`${inputCls} cursor-not-allowed bg-slate-100 text-slate-500`}
               />
             </Field>
             <Field id="ownerEmail" label="Owner email (read-only)">
@@ -486,7 +482,7 @@ function AddStudioForm() {
                 id="ownerEmail"
                 readOnly
                 value={session?.user?.email ?? ""}
-                className={`${inputCls} cursor-not-allowed bg-neutral-100 text-neutral-600`}
+                className={`${inputCls} cursor-not-allowed bg-slate-100 text-slate-500`}
               />
             </Field>
           </div>
@@ -496,7 +492,7 @@ function AddStudioForm() {
             <Button
               type="submit"
               disabled={submitting}
-              className="h-11 rounded-xl bg-amber-400 px-6 font-semibold text-neutral-900 hover:bg-amber-300"
+              className="h-11 rounded-xl bg-[#E64833] px-6 font-semibold text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b]"
             >
               {submitting ? (
                 <>
@@ -513,13 +509,13 @@ function AddStudioForm() {
               variant="outline"
               onClick={handleReset}
               disabled={submitting}
-              className="h-11 rounded-xl border-neutral-300 bg-white px-6 font-semibold text-neutral-900 hover:bg-neutral-100"
+              className="h-11 rounded-xl border-slate-200 bg-white px-6 font-semibold text-slate-800 hover:bg-slate-100"
             >
               Reset
             </Button>
           </div>
 
-          <p className="text-[11px] text-neutral-500">
+          <p className="text-[11px] text-slate-500">
             On submit: saved to the studios collection, a success toast appears, and you are
             redirected to your listings.
           </p>
@@ -533,7 +529,7 @@ function AddStudioForm() {
 function Field({ id, label, error, children }) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id} className="text-xs font-medium text-amber-700">
+      <Label htmlFor={id} className="text-xs font-semibold text-[#E64833]">
         {label}
       </Label>
       {children}
