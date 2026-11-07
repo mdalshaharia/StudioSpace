@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSession } from "@/app/lib/auth-client";
-import { getTokenFromClient } from "@/app/lib/getTokenFromClient";
+import { authorizedFetch } from "@/app/lib/getTokenFromClient";
 
 // opening hours: 08:00 – 22:00 (last start 21:00)
 const START_HOURS = Array.from({ length: 14 }, (_, i) => 8 + i);
@@ -84,15 +84,11 @@ export default function BookingModal({ studio, open, onOpenChange }) {
 
     setSubmitting(true);
     try {
-
-      const token = await getTokenFromClient();
-
       const bookingData = {
         // IDs & Titles compatible with all views
-        productId: studio._id,
+        studioId: studio._id,
         studioTitle: studio.title,
         studioImage: studio.imageUrl,
-        productImage: studio.imageUrl,
 
         // User info
         userId: session?.user?.id,
@@ -116,13 +112,12 @@ export default function BookingModal({ studio, open, onOpenChange }) {
         status: "Pending",
       };
 
-      const res = await fetch(
+      const res = await authorizedFetch(
         `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(token ? { authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify(bookingData),
         }

@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSession } from "../lib/auth-client";
-import { getTokenFromClient } from "../lib/getTokenFromClient";
+import { authorizedFetch } from "../lib/getTokenFromClient";
 import { LoaderScreen } from "@/components/Skeletons";
 
 /* ------------------------------ config ------------------------------ */
@@ -102,7 +102,7 @@ function AddStudioForm() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}?userID=${session.user.id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}?userId=${session.user.id}`, {
           cache: "no-store",
         });
         if (!res.ok) throw new Error();
@@ -175,10 +175,8 @@ function AddStudioForm() {
     
     setSubmitting(true);
     let createdStudio = null;
-    let token = null;
     let payload = null;
     try {
-      token = await getTokenFromClient();
       payload = {
         title: form.title.trim(),
         category: form.category,
@@ -204,7 +202,7 @@ function AddStudioForm() {
       }
 
       // step 1: save or update the studio
-      const studioRes = await fetch(
+      const studioRes = await authorizedFetch(
         isEdit
         ? `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}`
         : `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios`,
@@ -212,7 +210,6 @@ function AddStudioForm() {
           method: isEdit ? "PUT" : "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
         }
@@ -231,19 +228,17 @@ function AddStudioForm() {
     if (!isEdit) {
       // link newly created studio to the owner's listings
       try {
-        const myListingRes = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings`, {
+        const myListingRes = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ ownerId: payload.ownerId, productId: createdStudio.insertedId }),
+          body: JSON.stringify({ ownerId: payload.ownerId, studioId: createdStudio.insertedId }),
         });
         if (!myListingRes.ok) {
           // roll back the studio so it isn't silently orphaned
-          await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${createdStudio.insertedId}`, {
+          await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${createdStudio.insertedId}`, {
             method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
           }).catch(() => {});
           const data = await myListingRes.json().catch(() => ({}));
           throw new Error(data.message || "Could not link the studio to your listings.");

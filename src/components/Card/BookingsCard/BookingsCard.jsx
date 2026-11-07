@@ -48,11 +48,11 @@ const BookingsCard = ({ bookings, onCancel, onConfirm, confirming }) => {
                     <TableRow key={b._id} className="border-slate-100 hover:bg-slate-50">
                         <TableCell>
                             <div className="flex items-center gap-3">
-                                {b.studioImage || b.productImage ? (
+                                {b.studioImage ? (
                                     // plain <img> so any image host works without next.config changes
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
-                                        src={b.studioImage || b.productImage}
+                                        src={b.studioImage}
                                         alt=""
                                         loading="lazy"
                                         className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover"
@@ -60,7 +60,7 @@ const BookingsCard = ({ bookings, onCancel, onConfirm, confirming }) => {
                                 ) : (
                                     <span className="h-10 w-10 shrink-0 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200" />
                                 )}
-                                <span className="font-bold text-[#244855]">{b.studioTitle || b.productName || "Studio"}</span>
+                                <span className="font-bold text-[#244855]">{b.studioTitle || "Studio"}</span>
                             </div>
                         </TableCell>
                         <TableCell className="whitespace-nowrap">{formatDate(b.date || b.BookingDate)}</TableCell>

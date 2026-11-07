@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useSession } from "../lib/auth-client";
-import { getTokenFromClient } from "../lib/getTokenFromClient";
+import { authorizedFetch } from "../lib/getTokenFromClient";
 import BookingsCard, { formatDate } from "@/components/Card/BookingsCard/BookingsCard";
 import EmptyState from "@/components/EmptyState/EmptyState";
 import Navbar from "@/components/Navbar/Navbar";
@@ -40,13 +40,9 @@ export default function MyBookingsPage() {
 
     setLoading(true);
     setError(false);
-    const token = await getTokenFromClient();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${session.user.id}`, {
+      const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${session.user.id}`, {
         cache: "no-store",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
       });
       if (!res.ok) throw new Error();
       const data = await res.json();
@@ -76,7 +72,7 @@ export default function MyBookingsPage() {
       if (!res.ok) throw new Error();
       const data = await res.json();
       // console.log(data)
-      setBookings((prev) => prev.filter((b) => b.productId !== bookingId));
+      setBookings((prev) => prev.filter((b) => b.studioId !== bookingId));
       toast.success("Booking cancelled.");
       setTarget(null);
     } catch {
@@ -186,7 +182,7 @@ export default function MyBookingsPage() {
             <AlertDialogTitle className="text-[#244855]">Cancel this booking?</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-500">
               {target &&
-                `${target.studioTitle || target.productName || "Studio"} on ${formatDate(target.date || target.BookingDate)}, ${target.startTime || ""} to ${target.endTime || ""}.`}
+                `${target.studioTitle || "Studio"} on ${formatDate(target.date || target.BookingDate)}, ${target.startTime || ""} to ${target.endTime || ""}.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -200,7 +196,7 @@ export default function MyBookingsPage() {
               disabled={cancelling}
               onClick={(e) => {
                 e.preventDefault(); // stay open until the request finishes
-                confirmCancel(target.productId);
+                confirmCancel(target.studioId);
               }}
               className="bg-red-600 text-white hover:bg-red-500"
             >

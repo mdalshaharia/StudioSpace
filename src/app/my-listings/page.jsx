@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useSession } from "../lib/auth-client";
 // import { getTokenFromServer } from "../lib/getTokenFromServer";
-import { getTokenFromClient } from "../lib/getTokenFromClient";
+import { authorizedFetch } from "../lib/getTokenFromClient";
 import ProductContext from "@/context/productContext";
 import ListingCard from "@/components/Card/ListingCard/ListingCard";
 import Navbar from "@/components/Navbar/Navbar";
@@ -62,19 +62,14 @@ useEffect(() => {
       if (!session?.user?.id) return;
 
       try {
-        const token = await getTokenFromClient();
-        
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings/${session.user.id}`, {
+        const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings/${session.user.id}`, {
           cache: "no-store",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         });
 
         if (res.ok) {
           const resData = await res.json();
 
-          const resIds = new Set(resData.map((p) => p.productId || p._id));
+          const resIds = new Set(resData.map((p) => p.studioId || p._id));
 
           const filteredData = products.filter((d) => resIds.has(d._id));
           setListings(filteredData);
@@ -94,26 +89,22 @@ useEffect(() => {
 
 
   /* delete */
-  const confirmDelete = async (productId) => {
-    // console.log(productId)
+  const confirmDelete = async (studioId) => {
     setDeleting(true);
     try {
-      const token = await getTokenFromClient();
       const [studioRes, listingRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${productId}?userId=${session.user.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      }),
-      fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings/${productId}?userId=${session.user.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      })
-    ]);
+        authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}?userId=${session.user.id}`, {
+          method: 'DELETE',
+        }),
+        authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings/${studioId}?userId=${session.user.id}`, {
+          method: 'DELETE',
+        }),
+      ]);
       if (!studioRes.ok || !listingRes.ok) {
       throw new Error("Failed to delete from one or more endpoints.");
     }
-      setListings((prev) => prev.filter((l) => l?._id !== productId));
-      setStudios((prev) => prev.filter((s) => s._id !== productId));
+      setListings((prev) => prev.filter((l) => l?._id !== studioId));
+      setStudios((prev) => prev.filter((s) => s._id !== studioId));
       toast.success("Listing deleted.");
       setToDelete(null);
     } catch {
