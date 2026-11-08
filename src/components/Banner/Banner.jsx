@@ -67,7 +67,7 @@ export default function Banner() {
                 className="h-full"
             >
                 {SLIDES.map((s, i) => (
-                    <SwiperSlide key={s.tag}>
+                    <SwiperSlide key={s.image}>
                         <div className="relative h-full w-full">
                             {/* image */}
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -118,47 +118,6 @@ export default function Banner() {
                 ))}
             </Swiper>
             </Suspense>
-
-            {/* swiper control colours + hide arrows on small screens */}
-            <style jsx global>{`
-        .hero-slider .swiper-pagination-bullet {
-          background: #fff;
-          opacity: 0.5;
-          width: 10px;
-          height: 10px;
-        }
-        .hero-slider .swiper-pagination-bullet-active {
-          background: #e64833;
-          opacity: 1;
-          width: 28px;
-          border-radius: 9999px;
-        }
-        .hero-slider .swiper-button-next,
-        .hero-slider .swiper-button-prev {
-          color: #fff;
-          width: 44px;
-          height: 44px;
-          border-radius: 9999px;
-          background: rgba(36, 72, 85, 0.55);
-          backdrop-filter: blur(6px);
-          transition: background 0.2s;
-        }
-        .hero-slider .swiper-button-next:hover,
-        .hero-slider .swiper-button-prev:hover {
-          background: #e64833;
-        }
-        .hero-slider .swiper-button-next svg,
-        .hero-slider .swiper-button-prev svg {
-          width: 18px;
-          height: 18px;
-        }
-        @media (max-width: 640px) {
-          .hero-slider .swiper-button-next,
-          .hero-slider .swiper-button-prev {
-            display: none;
-          }
-        }
-      `}</style>
         </section>
     );
 }
