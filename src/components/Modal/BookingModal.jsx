@@ -84,6 +84,31 @@ export default function BookingModal({ studio, open, onOpenChange }) {
 
     setSubmitting(true);
     try {
+      /* pre-flight: verify the slot doesn't overlap any existing
+         Confirmed booking for this studio before saving; times are
+         zero-padded "HH:00" strings, so plain string comparison works */
+      const newStart = toTime(startNum);
+      const newEnd = toTime(startNum + hoursNum);
+      const bookingDate = format(date, "yyyy-MM-dd");
+
+      const conflictsRes = await authorizedFetch(
+        `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/studio/${studio._id}?date=${bookingDate}`,
+        { cache: "no-store" }
+      );
+      if (!conflictsRes.ok) throw new Error("Could not check availability.");
+
+      const confirmed = await conflictsRes.json();
+      const clash = confirmed.find(
+        (b) => b.startTime < newEnd && b.endTime > newStart
+      );
+
+      if (clash) {
+        toast.error(
+          `That time clashes with a confirmed booking (${clash.startTime}–${clash.endTime} on ${bookingDate}). Please pick a different slot.`
+        );
+        return;
+      }
+
       const bookingData = {
         // IDs & Titles compatible with all views
         studioId: studio._id,
@@ -96,10 +121,10 @@ export default function BookingModal({ studio, open, onOpenChange }) {
         userEmail: session?.user?.email,
 
         // Timing
-        date: format(date, "yyyy-MM-dd"),
+        date: bookingDate,
         BookingDate: date.toISOString(),
-        startTime: toTime(startNum),
-        endTime: toTime(startNum + hoursNum),
+        startTime: newStart,
+        endTime: newEnd,
         hours: hoursNum,
 
         // Financials
