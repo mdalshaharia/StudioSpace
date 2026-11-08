@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  env: {
+    NEXT_PUBLIC_SERVER_BASE_URI: "https://studiospace-server-mocha.vercel.app",
+    BETTER_AUTH_URL: "https://studio-space-ivory.vercel.app",
+  },
   /* config options here */
   // https://unsplash.com/photos/a-man-in-a-white-shirt-is-posing-for-a-picture-mRVP1c59wko' />
   // https://lh3.googleusercontent.com/a/ACg8ocLx67rUPcXs3RBgXX0j7FNYD75rVGxVpcymVsM5oLrB1Q8-qP5r=s96-c

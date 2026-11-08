@@ -7,7 +7,7 @@ const client = new MongoClient(process.env.DB_URL);
 const db = client.db('studio-space');
 
 export const auth = betterAuth({
-  trustedOrigins: ["http://localhost:3000", "https://b14-a07-five.vercel.app"],
+  trustedOrigins: ["http://localhost:3000", "https://studio-space-ivory.vercel.app"],
   emailAndPassword: {
     enabled: true,
     autoSignIn: false, // require explicit sign-in after registration
