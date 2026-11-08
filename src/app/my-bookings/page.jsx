@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, CalendarX2, CircleAlert, LogIn } from "lucide-react";
@@ -29,8 +28,8 @@ export default function MyBookingsPage() {
 
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false); // fetch failed — not the same as "no bookings"
-  const [target, setTarget] = useState(null); // booking waiting for cancel confirmation
+  const [error, setError] = useState(false);
+  const [target, setTarget] = useState(null); 
   const [cancelling, setCancelling] = useState(false);
   const [confirming, setConfirming] = useState(false);
 
@@ -53,7 +52,6 @@ export default function MyBookingsPage() {
     }
   }, [session]);
 
-  /* run the fetch on mount / session change */
   useEffect(() => {
     if (!session?.user?.id) return;
     let ignore = false;
@@ -84,12 +82,10 @@ export default function MyBookingsPage() {
     };
   }, [session]);
 
-
-  /* cancel */
   const confirmCancel = async (bookingId) => {
     setCancelling(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${bookingId}?userId=${session?.user.id}`, {
+      const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${bookingId}?userId=${session?.user.id}`, {
         method:'DELETE'
       });
       if (!res.ok) throw new Error();
@@ -105,12 +101,26 @@ export default function MyBookingsPage() {
     }
   };
 
-  /* confirm (update status) */
+  const askConfirm = (booking) => {
+    toast(
+      `Confirm booking for ${booking.studioTitle || "this studio"}?`,
+      {
+        description: `${formatDate(booking.date || booking.BookingDate)} · ${booking.startTime || "—"} to ${booking.endTime || "—"} · $${booking.total ?? 0}`,
+        action: {
+          label: "Yes, confirm",
+          onClick: () => confirmStatus(booking._id),
+        },
+        cancel: { label: "Not yet" },
+        duration: 8000,
+      }
+    );
+  };
+
   const confirmStatus = async (bookingId) => {
     // console.log(bookingId)
     setConfirming(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${bookingId}`, {
+      const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${bookingId}`, {
         method:'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Confirmed' }),
@@ -127,10 +137,9 @@ export default function MyBookingsPage() {
     }
   };
 
-  /* session still resolving — generic loader */
   if (isPending) {
     return (
-      <main className="flex min-h-screen flex-col bg-white">
+      <main className="flex min-h-screen flex-col bg-background">
         <Navbar />
         <div className="flex-1"><LoaderScreen /></div>
         <Footer />
@@ -138,10 +147,9 @@ export default function MyBookingsPage() {
     );
   }
 
-  /* signed out — tell the user instead of spinning forever */
   if (!session) {
     return (
-      <main className="flex min-h-screen flex-col bg-white text-slate-800">
+      <main className="flex min-h-screen flex-col bg-background text-foreground">
         <Navbar />
         <div className="flex flex-1 items-center justify-center px-4">
           <EmptyState
@@ -158,15 +166,15 @@ export default function MyBookingsPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-white text-slate-800">
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] sm:text-4xl">My bookings</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">My bookings</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Track your reservations. Only Pending bookings can be cancelled.
         </p>
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           {loading ? (
             <SkeletonList rows={4} />
           ) : error ? (
@@ -191,11 +199,11 @@ export default function MyBookingsPage() {
               title="No bookings yet"
               description="When you book a studio, your reservations will show up here."
               icon={CalendarX2}
-              href="/explore-studio"
+              href="/studios"
               label="Explore studios"
             />
           ) : (
-            <BookingsCard bookings={bookings} onCancel={setTarget} onConfirm={confirmStatus} confirming={confirming} />
+            <BookingsCard bookings={bookings} onCancel={setTarget} onConfirm={askConfirm} confirming={confirming} />
           )}
         </div>
       </div>
@@ -203,10 +211,10 @@ export default function MyBookingsPage() {
 
       {/* cancel confirmation */}
       <AlertDialog open={!!target} onOpenChange={(o) => !o && !cancelling && setTarget(null)}>
-        <AlertDialogContent className="border-slate-200 bg-white text-slate-800">
+        <AlertDialogContent className="border-border bg-card text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#244855]">Cancel this booking?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-500">
+            <AlertDialogTitle className="text-heading">Cancel this booking?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               {target &&
                 `${target.studioTitle || "Studio"} on ${formatDate(target.date || target.BookingDate)}, ${target.startTime || ""} to ${target.endTime || ""}.`}
             </AlertDialogDescription>
@@ -214,7 +222,7 @@ export default function MyBookingsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel
               disabled={cancelling}
-              className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+              className="border-border bg-card text-foreground/85 hover:bg-muted hover:text-foreground"
             >
               Keep booking
             </AlertDialogCancel>

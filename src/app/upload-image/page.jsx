@@ -16,16 +16,24 @@ import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar/Navbar";
 import Footer from "@/components/Footer/Footer";
 import { uploadImageToImgBB } from "../lib/uploadImage";
+import { useSession } from "../lib/auth-client";
+import { LoaderScreen } from "@/components/Skeletons";
 
 const ACCEPT = ["image/jpeg", "image/png", "image/webp"];
 const MAX_MB = 5;
 
 const inputCls =
-  "h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60";
+  "h-11 rounded-xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus-visible:ring-[#E64833]/60";
 
 export default function UploadImagePage() {
+  const { data: session, isPending } = useSession();
+
+  if (isPending || !session) {
+    return <LoaderScreen />;
+  }
+
   return (
-    <main className="flex min-h-screen flex-col bg-white text-slate-800">
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <div className="flex-1">
         <section className="mx-auto w-full max-w-lg px-4 py-8 sm:px-6 sm:py-12">
@@ -110,11 +118,11 @@ function ImageUploadCard() {
   };
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-      <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] text-center">
+    <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
+      <h1 className="text-3xl font-extrabold tracking-tight text-heading text-center">
         Upload images
       </h1>
-      <p className="mt-1 text-sm text-slate-500 text-center">
+      <p className="mt-1 text-sm text-muted-foreground text-center">
         Get a live, shareable link for each image.
       </p>
 
@@ -133,15 +141,15 @@ function ImageUploadCard() {
         className={`mt-6 flex flex-col items-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${
           dragging
             ? "border-[#E64833]/60 bg-[#E64833]/5"
-            : "border-slate-300 bg-slate-50"
+            : "border-border bg-muted/50"
         }`}
       >
-        <span className="grid h-16 w-16 place-items-center rounded-2xl bg-[#244855]/10 text-[#244855]">
+        <span className="grid h-16 w-16 place-items-center rounded-2xl bg-[#244855]/10 text-heading dark:bg-white/10">
           <UploadCloud className="h-7 w-7" aria-hidden />
         </span>
 
-        <p className="mt-6 text-lg font-bold text-[#244855]">Drag and drop images here</p>
-        <p className="mt-3 text-slate-600">
+        <p className="mt-6 text-lg font-bold text-heading">Drag and drop images here</p>
+        <p className="mt-3 text-muted-foreground">
           or{" "}
           <button
             type="button"
@@ -151,7 +159,7 @@ function ImageUploadCard() {
             browse your files
           </button>
         </p>
-        <p className="mt-4 text-xs text-slate-500">JPG, PNG or WebP · up to {MAX_MB} MB each</p>
+        <p className="mt-4 text-xs text-muted-foreground">JPG, PNG or WebP · up to {MAX_MB} MB each</p>
 
         <input
           ref={inputRef}
@@ -172,13 +180,13 @@ function ImageUploadCard() {
           {files.map(({ file, preview }, i) => (
             <li
               key={preview}
-              className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2"
+              className="flex items-center gap-3 rounded-xl border border-border bg-muted/50 p-2"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={preview} alt="" className="h-10 w-10 shrink-0 rounded-lg object-cover" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-[#244855]">{file.name}</p>
-                <p className="text-xs text-slate-500">
+                <p className="truncate text-sm font-medium text-heading">{file.name}</p>
+                <p className="text-xs text-muted-foreground">
                   {(file.size / 1024 / 1024).toFixed(2)} MB
                 </p>
               </div>
@@ -194,7 +202,7 @@ function ImageUploadCard() {
                 type="button"
                 onClick={() => removeFile(i)}
                 aria-label={`Remove ${file.name}`}
-                className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800"
+                className="grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -232,7 +240,7 @@ function ImageUploadCard() {
         </Label>
         <div className="flex gap-2">
           <div className="relative flex-1">
-            <ImageIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <ImageIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="live-link"
               readOnly

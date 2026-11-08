@@ -1,6 +1,7 @@
 'use client'
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2, Building2 } from "lucide-react";
@@ -33,13 +34,11 @@ import EmptyState from "@/components/EmptyState/EmptyState";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const ADD_ROUTE = "/add-studio";
-const EDIT_ROUTE = (id) => `/add-studio?studioId=${id}`;
+const EDIT_ROUTE = (id) => `/studios/edit/${id}`;
 
 /* ------------------------------- page -------------------------------- */
 
 export default function MyListingsPage() {
-  //  const session = await auth.api.getSession({ headers: await headers() });
-  // console.log(session)
 
   const router = useRouter();
   const [user, setUser] = useState(null);
@@ -52,7 +51,6 @@ export default function MyListingsPage() {
   const { data: session, isPending } = useSession();
    const { products = [], error } = useContext(ProductContext);
  
-  /* auth guard */
 
   /* fetch listings */
 
@@ -115,16 +113,16 @@ useEffect(() => {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-white text-slate-800">
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <div className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
         {/* header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] sm:text-4xl">
+            <h1 className="text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">
               My studio listings
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               Spaces you host. Update details or remove a listing.
             </p>
           </div>
@@ -139,7 +137,7 @@ useEffect(() => {
         {/* body */}
         <div className="mt-6">
           {loading ? (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <SkeletonList rows={4} />
             </div>
           ) : listings.length === 0 ? (
@@ -153,14 +151,14 @@ useEffect(() => {
                 {listings.map((s) => (
                   <li
                     key={s._id}
-                    className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                    className="rounded-2xl border border-border bg-card p-4 shadow-sm"
                   >
                     <div className="flex items-center gap-3">
                       <Thumb src={s.imageUrl} alt={s.title} />
                       <div className="min-w-0">
-                        <p className="truncate font-bold text-[#244855]">{s.title}</p>
-                        <p className="text-sm text-slate-500">
-                          {s.location} · <span className="font-bold text-[#244855]">${s.hourlyRate}/hr</span>
+                        <p className="truncate font-bold text-heading">{s.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {s.location} · <span className="font-bold text-heading">${s.hourlyRate}/hr</span>
                         </p>
                       </div>
                     </div>
@@ -177,12 +175,11 @@ useEffect(() => {
       </div>
       <Footer />
 
-      {/* delete confirmation — same pattern as my-bookings cancel dialog */}
       <AlertDialog open={!!toDelete} onOpenChange={(o) => !o && !deleting && setToDelete(null)}>
-        <AlertDialogContent className="border-slate-200 bg-white text-slate-800">
+        <AlertDialogContent className="border-border bg-card text-foreground">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-[#244855]">Delete this listing?</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-500">
+            <AlertDialogTitle className="text-heading">Delete this listing?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
               {toDelete &&
                 `“${toDelete.title || "This studio"}” will be permanently removed from your listings. This can’t be undone.`}
             </AlertDialogDescription>
@@ -190,14 +187,14 @@ useEffect(() => {
           <AlertDialogFooter>
             <AlertDialogCancel
               disabled={deleting}
-              className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+              className="border-border bg-card text-foreground/85 hover:bg-muted hover:text-foreground"
             >
               Keep listing
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={deleting}
               onClick={(e) => {
-                e.preventDefault(); // stay open until the request finishes
+                e.preventDefault();
                 confirmDelete(toDelete._id);
               }}
               className="bg-red-600 text-white hover:bg-red-500"
@@ -221,16 +218,11 @@ useEffect(() => {
 
 function Thumb({ src, alt }) {
   return src ? (
-    // plain <img> so any image host works without next.config changes
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover"
-    />
+    <span className="relative block h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border">
+      <Image src={src} alt={alt} fill sizes="40px" className="object-cover" />
+    </span>
   ) : (
-    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-400">
+    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground">
       <Building2 className="h-4 w-4" aria-hidden />
     </span>
   );
@@ -238,7 +230,7 @@ function Thumb({ src, alt }) {
 
 function CategoryPill({ children }) {
   return (
-    <span className="badge badge-outline h-auto whitespace-nowrap rounded-full border-slate-200 px-3 py-1 text-xs font-normal text-slate-600">
+    <span className="badge badge-outline h-auto whitespace-nowrap rounded-full border-border px-3 py-1 text-xs font-normal text-muted-foreground">
       {children}
     </span>
   );
@@ -249,7 +241,7 @@ function RowActions({ id, onDelete }) {
     <div className="flex items-center gap-2">
       <Link
         href={EDIT_ROUTE(id)}
-        className="inline-flex h-9 items-center rounded-lg border border-slate-200 px-4 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-[#E64833]"
+        className="inline-flex h-9 items-center rounded-lg border border-border px-4 text-xs font-semibold text-foreground/85 transition hover:bg-muted hover:text-[#E64833]"
       >
         Update
       </Link>
@@ -264,19 +256,3 @@ function RowActions({ id, onDelete }) {
   );
 }
 
-function LoadingState() {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      {[0, 1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="flex items-center gap-4 border-b border-slate-100 p-4 last:border-0"
-        >
-          <div className="h-10 w-10 animate-pulse rounded-lg bg-slate-100" />
-          <div className="h-4 w-40 animate-pulse rounded bg-slate-100" />
-          <div className="ml-auto hidden h-4 w-24 animate-pulse rounded bg-slate-100 sm:block" />
-        </div>
-      ))}
-    </div>
-  );
-}

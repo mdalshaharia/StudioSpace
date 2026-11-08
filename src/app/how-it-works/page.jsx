@@ -1,17 +1,4 @@
 
-/**
- * StudioSpace – How it works
- * Place at: app/how-it-works/page.jsx  (matches the Navbar link)
- *
- * Stack: Next.js + Tailwind + shadcn/ui (Tabs, Accordion, Button)
- * Theme: #244855 (deep teal) + #E64833 (red-orange)
- *
- * Install: npx shadcn@latest add tabs accordion button
- *
- * Images are picsum.photos placeholders – replace each `image` with your own
- * photos (e.g. /images/how/discover.jpg in /public).
- */
-
 import Link from "next/link";
 import { Search, CalendarClock, CreditCard, Camera, PlusSquare, Tag, CheckCircle2, Wallet } from "lucide-react";
 
@@ -104,7 +91,7 @@ const FAQ = [
 
 export default function HowItWorksPage() {
   return (
-    <main className="bg-white text-[#244855]">
+    <main className="bg-background text-heading">
       {/* intro */}
       <section className="mx-auto max-w-3xl px-4 pb-8 pt-12 text-center sm:px-6 sm:pt-16">
         <p className="text-xs font-semibold uppercase tracking-widest text-[#E64833]">
@@ -113,7 +100,7 @@ export default function HowItWorksPage() {
         <h1 className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">
           From search to shoot day in four steps
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-[#244855]/75">
+        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-heading/75">
           StudioSpace connects creators with people who run great spaces. Here is how booking and
           hosting work.
         </p>
@@ -125,13 +112,13 @@ export default function HowItWorksPage() {
           <TabsList className="mx-auto mb-10 grid h-11 w-full max-w-xs grid-cols-2 rounded-full bg-[#244855]/10 p-1">
             <TabsTrigger
               value="creators"
-              className="rounded-full text-sm font-semibold text-[#244855] data-[state=active]:bg-[#244855] data-[state=active]:text-white"
+              className="rounded-full text-sm font-semibold text-heading data-[state=active]:bg-[#244855] data-[state=active]:text-white"
             >
               For creators
             </TabsTrigger>
             <TabsTrigger
               value="hosts"
-              className="rounded-full text-sm font-semibold text-[#244855] data-[state=active]:bg-[#244855] data-[state=active]:text-white"
+              className="rounded-full text-sm font-semibold text-heading data-[state=active]:bg-[#244855] data-[state=active]:text-white"
             >
               For hosts
             </TabsTrigger>
@@ -164,7 +151,7 @@ export default function HowItWorksPage() {
                       <step.icon className="h-5 w-5 text-[#E64833]" aria-hidden />
                     </div>
                     <h2 className="mt-4 text-2xl font-extrabold tracking-tight">{step.title}</h2>
-                    <p className="mt-2 leading-relaxed text-[#244855]/75">{step.text}</p>
+                    <p className="mt-2 leading-relaxed text-heading/75">{step.text}</p>
                   </div>
                 </article>
               ))}
@@ -174,7 +161,7 @@ export default function HowItWorksPage() {
       </section>
 
       {/* faq */}
-      <section className="bg-[#244855]/[0.04] py-14 sm:py-16">
+      <section className="bg-[#244855]/[0.04] py-14 sm:py-16 dark:bg-white/[0.03]">
         <div className="mx-auto max-w-2xl px-4 sm:px-6">
           <h2 className="text-center text-3xl font-extrabold tracking-tight">Common questions</h2>
           <Accordion type="single" collapsible className="mt-8 w-full">
@@ -183,7 +170,7 @@ export default function HowItWorksPage() {
                 <AccordionTrigger className="text-left font-semibold hover:no-underline">
                   {f.q}
                 </AccordionTrigger>
-                <AccordionContent className="leading-relaxed text-[#244855]/75">
+                <AccordionContent className="leading-relaxed text-heading/75">
                   {f.a}
                 </AccordionContent>
               </AccordionItem>
@@ -203,7 +190,7 @@ export default function HowItWorksPage() {
             asChild
             className="h-11 rounded-xl bg-[#E64833] px-6 font-semibold text-white hover:bg-[#E64833]/90"
           >
-            <Link href="/explore">Explore studios</Link>
+            <Link href="/studios">Explore studios</Link>
           </Button>
           <Button
             asChild

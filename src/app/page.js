@@ -11,10 +11,10 @@ import Banner from "@/components/Banner/Banner";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white text-slate-800">
+    <main className="min-h-screen bg-card text-foreground">
       <Navbar />
       <Banner></Banner>
-      <Hero />
+      {/* <Hero /> */}
       <ByCategory />
       <Featured />
       <Preview />

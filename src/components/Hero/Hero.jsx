@@ -2,7 +2,7 @@
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-white">
+    <section className="relative overflow-hidden bg-card">
       <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:py-24">
         {/* Left text */}
         <div>
@@ -11,11 +11,11 @@ export default function Hero() {
             Peer-to-peer creative spaces
           </span>
 
-          <h1 className="mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight text-[#244855] sm:text-5xl lg:text-6xl">
+          <h1 className="mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight text-heading sm:text-5xl lg:text-6xl">
             Find the room where your next project happens.
           </h1>
 
-          <p className="mt-5 max-w-lg text-sm leading-relaxed text-slate-600 sm:text-base">
+          <p className="mt-5 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
             Book photo cyc walls, sound stages, podcast lounges, and recording suites from
             creators who run them. Live availability, transparent pricing.
           </p>
@@ -40,9 +40,9 @@ export default function Hero() {
             className="bottom-[4%] left-[12%] h-[56%] w-[62%]"
           />
 
-          <div className="absolute bottom-[8%] right-0 rounded-xl border border-slate-200 bg-white/95 px-4 py-3 shadow-xl backdrop-blur-sm sm:right-2">
-            <p className="text-[11px] font-medium text-slate-500">Open today</p>
-            <p className="text-sm font-bold text-[#244855]">
+          <div className="absolute bottom-[8%] right-0 rounded-xl border border-border bg-card/90 px-4 py-3 shadow-xl backdrop-blur-sm sm:right-2">
+            <p className="text-[11px] font-medium text-muted-foreground">Open today</p>
+            <p className="text-sm font-bold text-heading">
               3 slots from <span className="text-[#E64833]">$45/hr</span>
             </p>
           </div>
@@ -55,7 +55,7 @@ export default function Hero() {
 function PhotoCard({ src, label, className = "", labelClassName = "bottom-3 left-4" }) {
   return (
     <div
-      className={`absolute overflow-hidden rounded-2xl border border-slate-200 shadow-xl transition duration-300 hover:scale-[1.02] ${className}`}
+      className={`absolute overflow-hidden rounded-2xl border border-border shadow-xl transition duration-300 hover:scale-[1.02] ${className}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

@@ -43,8 +43,14 @@ export async function authorizedFetch(url, options = {}) {
     throw new Error("session-expired; sign-in in progress");
   }
 
+  /* store the token as an HTTPOnly cookie on the API server so it
+     can't be read by client-side JS; only needs to happen once per page
+     load (a module flag avoids an extra round trip on every call) */
+  await storeTokenCookie(token);
+
   const res = await fetch(url, {
     ...options,
+    credentials: "include",
     headers: {
       ...options.headers,
       Authorization: `Bearer ${token}`,
@@ -59,4 +65,23 @@ export async function authorizedFetch(url, options = {}) {
   }
 
   return res;
+}
+
+let cookieStored = false;
+async function storeTokenCookie(token) {
+  if (cookieStored) return;
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/auth/login`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ token }),
+      }
+    );
+    if (res.ok) cookieStored = true;
+  } catch {
+    /* cookie store failed — the Authorization header fallback still works */
+  }
 }

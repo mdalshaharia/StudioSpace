@@ -7,11 +7,11 @@ export default function FeaturedCard({ studio }) {
 
   return (
     <Link
-      href={`/studio/${studio._id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
+      href={`/studios/${studio._id}`}
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
     >
       {/* image area */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
         {image && (
           <Image
             src={image}
@@ -33,10 +33,10 @@ export default function FeaturedCard({ studio }) {
           {studio.category}
         </span>
 
-        <h3 className="mt-3 text-base font-bold leading-snug text-[#244855] transition duration-200 group-hover:text-[#E64833]">
+        <h3 className="mt-3 text-base font-bold leading-snug text-heading transition duration-200 group-hover:text-[#E64833]">
           {studio.title}
         </h3>
-        <p className="mt-1.5 text-xs text-slate-500">
+        <p className="mt-1.5 text-xs text-muted-foreground">
           {[studio.location, studio.maxCapacity && `${studio.maxCapacity} guests`]
             .filter(Boolean)
             .join(" · ")}
@@ -47,10 +47,10 @@ export default function FeaturedCard({ studio }) {
           <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </span>
 
-        <p className="mt-auto flex items-center justify-between gap-3 pt-4 border-t border-slate-100 text-sm">
+        <p className="mt-auto flex items-center justify-between gap-3 pt-4 border-t border-border text-sm">
           <span>
-            <span className="font-extrabold text-[#244855] text-base">${studio.hourlyRate}</span>
-            <span className="text-slate-400 text-xs"> / hour</span>
+            <span className="font-extrabold text-heading text-base">${studio.hourlyRate}</span>
+            <span className="text-muted-foreground text-xs"> / hour</span>
           </span>
           {studio.rating != null && (
             <span className="flex items-center gap-1 font-semibold text-[#E64833] text-xs">

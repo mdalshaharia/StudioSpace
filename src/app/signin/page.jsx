@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -15,14 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import Navbar from "@/components/Navbar/Navbar";
-import Footer from "@/components/Footer/Footer";
 import { LoaderScreen } from "@/components/Skeletons";
-// import { auth, googleProvider } from "@/lib/firebase";
-
-/* ------------------------------ helpers ------------------------------ */
-
-
-
 
 function GoogleIcon() {
     return (
@@ -38,16 +32,14 @@ function GoogleIcon() {
 /* ------------------------------- page -------------------------------- */
 
 export default function LoginPage() {
-    // useSearchParams needs a Suspense boundary in the App Router
     return (
-        <main className="flex min-h-screen flex-col bg-white text-slate-800">
+        <main className="flex min-h-screen flex-col bg-background text-foreground">
             <Navbar />
             <div className="flex-1">
                 <Suspense fallback={<LoaderScreen />}>
                     <SignIn />
                 </Suspense>
             </div>
-            <Footer />
         </main>
     );
 }
@@ -63,12 +55,9 @@ function SignIn() {
     const [resetLoading, setResetLoading] = useState(false);
 
     const busy = loading || googleLoading;
+    const rawRedirect = params.get("redirect") || "/";
+    const redirectPath = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//") ? rawRedirect : "/";
 
-
-
-
-
-    /* ---------------------- email + password ---------------------- */
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -82,9 +71,9 @@ function SignIn() {
                 password: ResData.password,
             });
             if (data) {
-                toast.success("Sign in successful. Redirecting to home page...");
+                toast.success(redirectPath === "/" ? "Sign in successful. Redirecting to home page..." : "Sign in successful. Redirecting...");
                 setTimeout(() => {
-                    router.push("/");
+                    router.push(redirectPath);
                     router.refresh();
                 }, 3000);
             }
@@ -106,7 +95,6 @@ function SignIn() {
         }
     };
 
-    /* ---------------------------- google ---------------------------- */
     const handleGoogle = async () => {
         try {
             setGoogleLoading(true);
@@ -114,7 +102,7 @@ function SignIn() {
 
             const { data, error } = await signIn.social({
                 provider: "google",
-                callbackURL: "/",
+                callbackURL: redirectPath,
             });
             if (data) {
                 toast.success("Google sign in successful. Redirecting to home page...");
@@ -134,21 +122,17 @@ function SignIn() {
         }
     };
 
-    /* ------------------------ forgot password ------------------------ */
     const handleReset = async () => {
         toast.info("Password reset coming soon.");
     };
 
     return (
         <section className="mx-auto w-full max-w-lg px-4 py-8 sm:px-6 sm:py-12">
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
                 <div className="flex justify-center mb-4">
-                    <span className="grid h-16 w-16 place-items-center rounded-2xl bg-[#244855]/10">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/brad-logo.png" alt="" className="h-9 w-9 object-contain" />
-                    </span>
+                        <Image src="/brad-logo.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
                 </div>
-                <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] text-center">Sign in</h1>
+                <h1 className="text-3xl font-extrabold tracking-tight text-heading text-center">Login</h1>
 
                     <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
                         {/* email */}
@@ -163,7 +147,7 @@ function SignIn() {
                                 autoComplete="email"
                                 placeholder="you@email.com"
                                 disabled={busy}
-                                className="h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60"
+                                className="h-11 rounded-xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus-visible:ring-[#E64833]/60"
                             />
                         </div>
 
@@ -180,13 +164,13 @@ function SignIn() {
                                     autoComplete="current-password"
                                     placeholder="Your password"
                                     disabled={busy}
-                                    className="h-11 rounded-xl border-slate-200 bg-slate-50 pr-11 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60"
+                                    className="h-11 rounded-xl border-border bg-muted/50 pr-11 text-foreground placeholder:text-muted-foreground focus-visible:ring-[#E64833]/60"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((s) => !s)}
                                     aria-label={showPassword ? "Hide password" : "Show password"}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition hover:text-foreground/85"
                                 >
                                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                 </button>
@@ -209,9 +193,9 @@ function SignIn() {
                                     checked={remember}
                                     onCheckedChange={(v) => setRemember(v === true)}
                                     disabled={busy}
-                                    className="border-slate-300 data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
+                                    className="border-border data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
                                 />
-                                <Label htmlFor="remember" className="cursor-pointer text-xs font-normal text-slate-600">
+                                <Label htmlFor="remember" className="cursor-pointer text-xs font-normal text-muted-foreground">
                                     Remember me
                                 </Label>
                             </div>
@@ -243,9 +227,9 @@ function SignIn() {
 
                     {/* divider */}
                     <div className="my-5 flex items-center gap-3">
-                        <Separator className="flex-1 bg-slate-100" />
-                        <span className="text-xs text-slate-400">or</span>
-                        <Separator className="flex-1 bg-slate-100" />
+                        <Separator className="flex-1 bg-muted" />
+                        <span className="text-xs text-muted-foreground">or</span>
+                        <Separator className="flex-1 bg-muted" />
                     </div>
 
                     {/* google */}
@@ -254,7 +238,7 @@ function SignIn() {
                         variant="outline"
                         onClick={handleGoogle}
                         disabled={busy}
-                        className="h-11 w-full rounded-xl border-slate-200 bg-white font-semibold text-slate-800 hover:bg-slate-100 hover:text-[#244855]"
+                        className="h-11 w-full rounded-xl border-border bg-card font-semibold text-foreground hover:bg-muted hover:text-heading"
                     >
                         {googleLoading ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -266,7 +250,7 @@ function SignIn() {
                         Continue with Google
                     </Button>
 
-                    <p className="mt-6 text-sm text-slate-500">
+                    <p className="mt-6 text-sm text-muted-foreground">
                         New to StudioSpace?{" "}
                         <Link
                             href='/signup'

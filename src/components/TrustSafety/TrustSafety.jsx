@@ -25,17 +25,17 @@ const FEATURES = [
 
 export default function TrustSafety() {
   return (
-    <section className="relative bg-white">
+    <section className="relative bg-card">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-        <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-[#244855]/5 via-white to-white p-6 shadow-lg sm:p-8 lg:p-12">
+        <div className="rounded-3xl border border-border bg-gradient-to-br from-[#244855]/5 via-background to-background p-6 shadow-lg sm:p-8 lg:p-12">
           {/* header */}
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#E64833]/20 bg-[#E64833]/5 px-3.5 py-1 text-xs font-semibold tracking-wide text-[#E64833]">
             Trust and Safety
           </span>
-          <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-[#244855] sm:text-3xl lg:text-4xl">
+          <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-heading sm:text-3xl lg:text-4xl">
             Host guarantee and creator support
           </h2>
-          <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
             Every booking is backed by comprehensive protections for the people who host and the artists who create.
           </p>
 
@@ -44,15 +44,15 @@ export default function TrustSafety() {
             {FEATURES.map(({ icon: Icon, title, text }) => (
               <li
                 key={title}
-                className="group rounded-2xl border border-slate-200 bg-white p-6 transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xl hover:shadow-slate-200/80"
+                className="group rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xl hover:shadow-slate-200/80"
               >
                 <span className="grid h-11 w-11 place-items-center rounded-xl border border-[#E64833]/20 bg-[#E64833]/5 text-[#E64833] transition duration-300 group-hover:bg-[#E64833] group-hover:text-white">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
-                <h3 className="mt-4 text-base font-bold text-[#244855] transition group-hover:text-[#E64833]">
+                <h3 className="mt-4 text-base font-bold text-heading transition group-hover:text-[#E64833]">
                   {title}
                 </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-500">
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {text}
                 </p>
               </li>

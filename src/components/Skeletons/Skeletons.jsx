@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 /* image + two text lines — matches FeaturedCard layout */
 export function SkeletonCard() {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <Skeleton className="aspect-[4/3] w-full rounded-none" />
       <div className="flex flex-1 flex-col gap-2.5 p-5">
         <Skeleton className="h-4 w-24 rounded-full" />
@@ -43,7 +43,7 @@ export function SkeletonGrid({ count = 6 }) {
 /* list rows with thumbnail + text — my-bookings / my-listings */
 export function SkeletonList({ rows = 4 }) {
   return (
-    <div aria-busy="true" aria-label="Loading list" className="divide-y divide-slate-100">
+    <div aria-busy="true" aria-label="Loading list" className="divide-y divide-border">
       {Array.from({ length: rows }).map((_, i) => (
         <div key={i} className="flex items-center gap-4 p-4">
           <Skeleton className="h-10 w-10 shrink-0 rounded-lg" />
@@ -76,7 +76,7 @@ export function SkeletonDetail() {
           </div>
         </div>
       </div>
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
         <Skeleton className="h-9 w-32" />
         <div className="mt-4 space-y-3">
           <Skeleton className="h-4 w-full" />
@@ -95,7 +95,7 @@ export function LoaderScreen({ label = "Loading…" }) {
     <div
       role="status"
       aria-label={label}
-      className="grid min-h-[60vh] w-full place-items-center bg-white"
+      className="grid min-h-[60vh] w-full place-items-center bg-card"
     >
       <Loader2 className="h-6 w-6 animate-spin text-[#E64833]" aria-hidden />
     </div>
@@ -115,7 +115,7 @@ export function SkeletonRail({ count = 5 }) {
           key={i}
           className="w-[calc((100%-0.75rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-4rem)/5)]"
         >
-          <div className="relative flex h-36 w-full items-end rounded-2xl border border-slate-200 bg-slate-100 p-4 sm:h-40 lg:h-44">
+          <div className="relative flex h-36 w-full items-end rounded-2xl border border-border bg-muted p-4 sm:h-40 lg:h-44">
             <Skeleton className="h-3.5 w-2/3" />
           </div>
         </li>

@@ -6,7 +6,7 @@ import { Inbox, CalendarX2, ArrowRight } from "lucide-react";
 export default function EmptyState({
   title = "Nothing Here Yet",
   description,
-  href = "/explore-studio",
+  href = "/studios",
   label = "Explore studios",
   icon: Icon = CalendarX2,
   action, // optional custom button — overrides the href/label link
@@ -14,7 +14,7 @@ export default function EmptyState({
   return (
     <section
       aria-live="polite"
-      className="mx-auto flex w-full max-w-xl flex-col items-center rounded-3xl px-6 py-12 text-center text-[#244855] sm:px-10"
+      className="mx-auto flex w-full max-w-xl flex-col items-center rounded-3xl px-6 py-12 text-center text-heading sm:px-10"
     >
       {/* icon */}
       <div className="grid h-40 w-40 place-items-center rounded-full bg-[#E64833]/10 sm:h-48 sm:w-48">
@@ -24,12 +24,12 @@ export default function EmptyState({
           aria-hidden
         />
       </div>
-      <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-[#244855] sm:text-3xl">
+      <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-heading sm:text-3xl">
         {title}
       </h2>
 
       {description && (
-        <p className="mt-2 max-w-sm text-sm text-slate-500">{description}</p>
+        <p className="mt-2 max-w-sm text-sm text-muted-foreground">{description}</p>
       )}
 
       <div className="mt-5">

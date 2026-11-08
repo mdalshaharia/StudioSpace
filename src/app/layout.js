@@ -2,6 +2,7 @@ import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { ProductProvider } from "@/context/productContext";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -24,12 +25,15 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       className={`${roboto.variable} ${robotoMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-white text-slate-800 selection:bg-[#E64833] selection:text-white">
-        <ProductProvider>
-          {children}
-        </ProductProvider>
-        <Toaster position="bottom-right" richColors />
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-[#E64833] selection:text-white">
+        <ThemeProvider>
+          <ProductProvider>
+            {children}
+          </ProductProvider>
+          <Toaster position="bottom-right" richColors />
+        </ThemeProvider>
       </body>
     </html>
   );

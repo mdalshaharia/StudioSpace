@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useContext, useRef } from "react";
 import Image from "next/image";
 import { SkeletonRail } from "@/components/Skeletons";
+import { categoryHref } from "@/app/lib/categories";
 
 export default function ByCategory() {
   const { products = [], loading } = useContext(ProductContext);
@@ -29,15 +30,15 @@ export default function ByCategory() {
   };
 
   return (
-    <section className="relative bg-white">
+    <section className="relative bg-card">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         {/* header */}
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-[#244855] sm:text-3xl">
+            <h2 className="text-2xl font-extrabold tracking-tight text-heading sm:text-3xl">
               Browse by studio type
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               Find spaces purpose-built for your specific creative medium.
             </p>
           </div>
@@ -46,7 +47,7 @@ export default function ByCategory() {
               type="button"
               onClick={() => slide(-1)}
               aria-label="Previous category"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-xs transition hover:border-[#E64833] hover:bg-[#E64833]/5 hover:text-[#E64833] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground/85 shadow-xs transition hover:border-[#E64833] hover:bg-[#E64833]/5 hover:text-[#E64833] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
             >
               <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
                 <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -56,7 +57,7 @@ export default function ByCategory() {
               type="button"
               onClick={() => slide(1)}
               aria-label="Next category"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-xs transition hover:border-[#E64833] hover:bg-[#E64833]/5 hover:text-[#E64833] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground/85 shadow-xs transition hover:border-[#E64833] hover:bg-[#E64833]/5 hover:text-[#E64833] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
             >
               <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4">
                 <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -80,8 +81,8 @@ export default function ByCategory() {
                 className="w-[calc((100%-0.75rem)/2)] shrink-0 snap-start sm:w-[calc((100%-2rem)/3)] lg:w-[calc((100%-4rem)/5)]"
               >
                 <Link
-                  href={`/studios`}
-                  className="group relative flex h-36 w-full items-end overflow-hidden rounded-2xl border border-slate-200 p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833] hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70 sm:h-40 lg:h-44"
+                  href={categoryHref(category.category)}
+                  className="group relative flex h-36 w-full items-end overflow-hidden rounded-2xl border border-border p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833] hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70 sm:h-40 lg:h-44"
                 >
                   {category.imageUrl && (
                     <Image

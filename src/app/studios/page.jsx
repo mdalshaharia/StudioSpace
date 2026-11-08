@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useContext, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, SearchX } from "lucide-react";
 
 import ProductContext from "@/context/productContext";
@@ -16,15 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const CHIPS = [
-  { key: "all", label: "All" },
-  { key: "photo", label: "Photo Studio" },
-  { key: "film", label: "Film Stage" },
-  { key: "podcast", label: "Podcast Lounge" },
-  { key: "music", label: "Music Suite" },
-  { key: "workshop", label: "Workshop" },
-];
+import { CHIPS } from "@/app/lib/categories";
 
 const SORTS = [
   { value: "default", label: "Recommended" },
@@ -37,7 +30,7 @@ const SORTS = [
 
 export default function ExplorePage() {
   return (
-    <main className="flex min-h-screen flex-col bg-white text-slate-800">
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <div className="flex-1">
         <Suspense fallback={<LoaderScreen />}>
@@ -55,10 +48,20 @@ function Explore() {
   const PAGE_SIZE = 6;
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortBy, setSortBy] = useState("default");
   const [page, setPage] = useState(1);
   const resultsRef = useRef(null);
+
+  /* seed the category filter from /studios?cat=... links (footer, home) */
+  const searchParams = useSearchParams();
+  const catParam = (searchParams.get("cat") || "").toLowerCase();
+  const catFromParam = CHIPS.some((c) => c.key === catParam) ? catParam : "all";
+  const [selectedCategory, setSelectedCategory] = useState(catFromParam);
+  const [prevCatFromParam, setPrevCatFromParam] = useState(catFromParam);
+  if (prevCatFromParam !== catFromParam) {
+    setPrevCatFromParam(catFromParam);
+    setSelectedCategory(catFromParam);
+  }
 
   const { products = [], loading, error } = useContext(ProductContext);
   const status = loading ? "loading" : error ? "error" : "ready";
@@ -142,32 +145,32 @@ function Explore() {
   }, [sortedList, page]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-slate-800">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <main className="flex-1">
         <div ref={resultsRef} className="mx-auto max-w-7xl scroll-mt-24 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
           {/* header */}
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#244855] sm:text-4xl">
+          <h1 className="text-3xl font-extrabold tracking-tight text-heading sm:text-4xl">
             Explore studios
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Find the right workspace for your next project.
           </p>
 
           {/* search + sort */}
-          <div className="mt-6 grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[1fr_220px]">
+          <div className="mt-6 grid gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm sm:grid-cols-[1fr_220px]">
             {/* Search Input */}
             <div className="space-y-1.5">
               <label htmlFor="search" className="text-[11px] font-semibold text-[#E64833]">
                 Search
               </label>
               <div className="relative">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Studio name or location"
-                  className="h-11 rounded-xl border-slate-200 bg-slate-50 pl-9 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60"
+                  className="h-11 rounded-xl border-border bg-muted/50 pl-9 text-foreground placeholder:text-muted-foreground focus-visible:ring-[#E64833]/60"
                 />
               </div>
             </div>
@@ -180,16 +183,16 @@ function Explore() {
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger
                   id="sort"
-                  className="h-11 w-full rounded-xl border-slate-200 bg-slate-50 text-slate-800 focus:ring-[#E64833]/60"
+                  className="h-11 w-full rounded-xl border-border bg-muted/50 text-foreground focus:ring-[#E64833]/60"
                 >
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="border-slate-200 bg-white text-slate-700">
+                <SelectContent className="border-border bg-card text-foreground/85">
                   {SORTS.map((s) => (
                     <SelectItem
                       key={s.value}
                       value={s.value}
-                      className="focus:bg-slate-100 focus:text-[#244855]"
+                      className="focus:bg-muted focus:text-heading"
                     >
                       {s.label}
                     </SelectItem>
@@ -215,7 +218,7 @@ function Explore() {
                   onClick={() => setSelectedCategory(c.key)}
                   className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${active
                       ? "border-[#E64833] bg-[#E64833] text-white shadow-sm shadow-[#E64833]/25"
-                      : "border-slate-200 text-slate-600 hover:border-[#E64833]/60 hover:text-[#E64833]"
+                      : "border-border text-muted-foreground hover:border-[#E64833]/60 hover:text-[#E64833]"
                     }`}
                 >
                   {c.label}
@@ -261,7 +264,7 @@ function Explore() {
 
             {status === "ready" && sortedList.length > 0 && (
               <>
-                <p className="mb-3 text-xs text-slate-500">
+                <p className="mb-3 text-xs text-muted-foreground">
                   <span>
                     {visibleList.length === 0
                       ? `${sortedList.length} ${sortedList.length === 1 ? "studio" : "studios"} found`
@@ -292,12 +295,12 @@ function Explore() {
 
 function Message({ icon, title, text, action }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-14 text-center">
+    <div className="rounded-2xl border border-dashed border-border bg-muted/50 px-6 py-14 text-center">
       {icon && (
-        <SearchX className="mx-auto mb-3 h-8 w-8 text-slate-400" aria-hidden />
+        <SearchX className="mx-auto mb-3 h-8 w-8 text-muted-foreground" aria-hidden />
       )}
-      <h2 className="text-lg font-bold text-[#244855]">{title}</h2>
-      <p className="mt-1 text-sm text-slate-500">{text}</p>
+      <h2 className="text-lg font-bold text-heading">{title}</h2>
+      <p className="mt-1 text-sm text-muted-foreground">{text}</p>
       <div className="mt-5 flex justify-center">{action}</div>
     </div>
   );
@@ -312,7 +315,7 @@ function Pagination({ page, totalPages, goToPage }) {
   const btn =
     "flex h-9 w-9 items-center justify-center rounded-full border text-sm transition";
   const idle =
-    "border-slate-200 bg-white text-slate-700 hover:border-[#E64833] hover:bg-[#E64833]/5 hover:text-[#E64833]";
+    "border-border bg-card text-foreground/85 hover:border-[#E64833] hover:bg-[#E64833]/5 hover:text-[#E64833]";
   const active =
     "border-[#E64833] bg-[#E64833] text-white shadow-sm shadow-[#E64833]/25 hover:bg-[#cf3e2b]";
 
@@ -335,7 +338,7 @@ function Pagination({ page, totalPages, goToPage }) {
       {/* page numbers */}
       {pages.map((p, i) =>
         p === "…" ? (
-          <span key={`dots-${i}`} className="px-1 text-sm text-slate-400">
+          <span key={`dots-${i}`} className="px-1 text-sm text-muted-foreground">
             …
           </span>
         ) : (

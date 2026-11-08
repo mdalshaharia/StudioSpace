@@ -12,33 +12,39 @@ import "swiper/css/pagination";
 
 import { Button } from "@/components/ui/button";
 
-const pexels = (id) =>
-    `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1920`;
+// const pexels = (id) =>
+//     `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1920`;
 
 const SLIDES = [
     {
-        image: '/hero-photo-1.jpg',
+        image: '/banner-photo-1.webp',
         tag: "Photo studios",
         title: "Find the room where your next shoot happens",
         text: "Seamless cyc walls, pro lighting and loading access, booked by the hour.",
     },
     {
-        image: pexels(8132964),
+        image: '/banner-photo-2.webp',
         tag: "Music suites",
         title: "Record your best take in a room built for sound",
         text: "Treated live rooms, vocal booths and mixing desks with clear pricing.",
     },
     {
-        image: pexels(33923596),
+        image: '/banner-photo-3.webp',
         tag: "Podcast lounges",
         title: "Start the conversation in a space that sounds great",
         text: "Cosy lounges with mics, panels and cameras ready when you arrive.",
     },
     {
-        image: pexels(30773261),
+        image: '/banner-photo-4.webp',
         tag: "Film stages",
         title: "Bring your story to life on a real stage",
         text: "Sound stages and green screen halls with live availability.",
+    },
+    {
+        image: '/banner-photo-5.webp',
+        tag: "Music suites",
+        title: "Record your best take in a room built for sound",
+        text: "Treated live rooms, vocal booths and mixing desks with clear pricing.",
     },
 ];
 
@@ -94,13 +100,13 @@ export default function Banner() {
                                             size="lg"
                                             className="h-12 rounded-xl border-none bg-[#E64833] px-8 text-base font-semibold text-white shadow-lg shadow-[#E64833]/30 transition-all hover:-translate-y-0.5 hover:bg-[#cf3e2b]"
                                         >
-                                            <Link href="/explore-studio">Explore Studios</Link>
+                                            <Link href="/studios">Explore Studios</Link>
                                         </Button>
                                         <Button
                                             asChild
                                             size="lg"
                                             variant="outline"
-                                            className="h-12 rounded-xl border border-white/40 bg-white/10 px-8 text-base font-semibold text-white shadow-lg shadow-black/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-white hover:bg-white hover:text-[#244855]"
+                                            className="h-12 rounded-xl border border-white/40 bg-white/10 px-8 text-base font-semibold text-white shadow-lg shadow-black/10 backdrop-blur transition-all hover:-translate-y-0.5 hover:border-white hover:bg-white hover:text-heading"
                                         >
                                             <Link href="/add-studio">Host Your Space</Link>
                                         </Button>

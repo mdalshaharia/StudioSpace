@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
@@ -20,8 +20,6 @@ import {
 import { useSession } from "../lib/auth-client";
 import { authorizedFetch } from "../lib/getTokenFromClient";
 import { LoaderScreen } from "@/components/Skeletons";
-
-/* ------------------------------ config ------------------------------ */
 
 const LISTINGS_ROUTE = "/my-listings";
 
@@ -67,7 +65,7 @@ const isUrl = (v) => {
 };
 
 const inputCls =
-  "h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60";
+  "h-11 rounded-xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus-visible:ring-[#E64833]/60";
 
 /* ------------------------------- page -------------------------------- */
 
@@ -81,56 +79,11 @@ export default function AddStudioPage() {
 
 function AddStudioForm() {
   const router = useRouter();
-  const studioId = useSearchParams().get("studioId");
-
-  const isEdit = !!studioId;
 
   const { data: session, isPending } = useSession();
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [loadingStudio, setLoadingStudio] = useState(isEdit);
-
-  // auth guard
-  useEffect(() => {
-    if (!isPending && !session?.user) router.replace("/signin?redirect=/my-listings");
-  }, [isPending, session, router]);
-
-  // prefill form when editing an existing studio
-  useEffect(() => {
-    if (isPending || !session?.user || !isEdit) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}?userId=${session.user.id}`, {
-          cache: "no-store",
-        });
-        if (!res.ok) throw new Error();
-        const s = await res.json();
-        if (!cancelled) {
-          setForm({
-            title: s.title ?? "",
-            category: s.category ?? "",
-            hourlyRate: s.hourlyRate != null ? String(s.hourlyRate) : "",
-            securityDeposit: s.securityDeposit != null ? String(s.securityDeposit) : "",
-            maxCapacity: s.maxCapacity != null ? String(s.maxCapacity) : "",
-            location: s.location ?? "",
-            imageUrl: s.imageUrl ?? "",
-            gallery: s.gallery ?? [],
-            amenities: s.amenities ?? [],
-            overview: s.overview ?? "",
-          });
-        }
-      } catch {
-        if (!cancelled) toast.error("Could not load the studio to edit.");
-      } finally {
-        if (!cancelled) setLoadingStudio(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isPending, session, isEdit, studioId]);
 
   const updateField = (name) => (e) => {
     setForm((prev) => ({ ...prev, [name]: e.target.value }));
@@ -192,22 +145,14 @@ function AddStudioForm() {
         ownerEmail: session?.user?.email ?? "",
         ownerId: session?.user?.id ?? "",
         status: "active",
+        rating: 4.6,
+        reviews: [],
+        createdAt: new Date().toISOString(),
       };
-      // only set these on create — overwriting them on edit would wipe the
-      // studio's existing rating, reviews and creation date
-      if (!isEdit) {
-        payload.rating = 4.6;
-        payload.reviews = [];
-        payload.createdAt = new Date().toISOString();
-      }
-
-      // step 1: save or update the studio
       const studioRes = await authorizedFetch(
-        isEdit
-        ? `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${studioId}`
-        : `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios`,
+        `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios`,
         {
-          method: isEdit ? "PUT" : "POST",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
@@ -224,54 +169,47 @@ function AddStudioForm() {
       setSubmitting(false);
       return;
     }
-
-    if (!isEdit) {
-      // link newly created studio to the owner's listings
-      try {
-        const myListingRes = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ownerId: payload.ownerId, studioId: createdStudio.insertedId }),
-        });
-        if (!myListingRes.ok) {
-          // roll back the studio so it isn't silently orphaned
-          await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${createdStudio.insertedId}`, {
-            method: "DELETE",
-          }).catch(() => {});
-          const data = await myListingRes.json().catch(() => ({}));
-          throw new Error(data.message || "Could not link the studio to your listings.");
-        }
-      } catch (err) {
-        toast.error(err.message || "Something went wrong. Please try again.");
-        setSubmitting(false);
-        return;
+    try {
+      const myListingRes = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/my-listings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ownerId: payload.ownerId, studioId: createdStudio.insertedId }),
+      });
+      if (!myListingRes.ok) {
+        await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studios/${createdStudio.insertedId}`, {
+          method: "DELETE",
+        }).catch(() => {});
+        const data = await myListingRes.json().catch(() => ({}));
+        throw new Error(data.message || "Could not link the studio to your listings.");
       }
+    } catch (err) {
+      toast.error(err.message || "Something went wrong. Please try again.");
+      setSubmitting(false);
+      return;
     }
-
-    // toast.success(isEdit ? "Studio updated successfully!" : "Studio added successfully!");
     setSubmitting(false);
     router.push(LISTINGS_ROUTE);
-    toast.warning("Reload the page to see your new listings");
+    toast.success("Reload the page to see your new listings");
   };
 
-  if (isPending || !session?.user || loadingStudio) {
+  if (isPending || !session?.user) {
     return <LoaderScreen />;
   }
 
   return (
-    <main className="bg-white text-slate-800">
+    <main className="bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-        <h1 className="text-3xl font-extrabold tracking-tight text-[#244855]">
-          {isEdit ? "Update your studio" : "Add a new studio"}
+        <h1 className="text-3xl font-extrabold tracking-tight text-heading">
+          Add a new studio
         </h1>
-        <p className="mt-1 text-sm text-slate-500">Tell creators about your space.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Tell creators about your space.</p>
 
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="mt-6 space-y-5 rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm sm:p-8"
+          className="mt-6 space-y-5 rounded-3xl border border-border bg-muted/50 p-5 shadow-sm sm:p-8"
         >
           {/* title + category */}
           <div className="grid gap-5 sm:grid-cols-2">
@@ -432,7 +370,7 @@ function AddStudioForm() {
                     className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition ${
                       checked
                         ? "border-[#E64833] bg-[#E64833]/5 font-semibold text-[#E64833]"
-                        : "border-slate-200 bg-white text-slate-600 hover:border-[#E64833]/60 hover:text-[#E64833]"
+                        : "border-border bg-card text-muted-foreground hover:border-[#E64833]/60 hover:text-[#E64833]"
                     }`}
                   >
                     <Checkbox
@@ -440,7 +378,7 @@ function AddStudioForm() {
                       checked={checked}
                       onCheckedChange={(v) => toggleAmenity(a, v === true)}
                       disabled={submitting}
-                      className="h-3.5 w-3.5 border-slate-300 data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
+                      className="h-3.5 w-3.5 border-border data-[state=checked]:border-[#E64833] data-[state=checked]:bg-[#E64833] data-[state=checked]:text-white"
                     />
                     {a}
                   </label>
@@ -459,7 +397,7 @@ function AddStudioForm() {
               onChange={updateField("overview")}
               disabled={submitting}
               aria-invalid={!!errors.overview}
-              className="rounded-xl border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus-visible:ring-[#E64833]/60"
+              className="rounded-xl border-border bg-muted/50 text-foreground placeholder:text-muted-foreground focus-visible:ring-[#E64833]/60"
             />
           </Field>
 
@@ -470,7 +408,7 @@ function AddStudioForm() {
                 id="ownerName"
                 readOnly
                 value={session?.user?.name ?? ""}
-                className={`${inputCls} cursor-not-allowed bg-slate-100 text-slate-500`}
+                className={`${inputCls} cursor-not-allowed bg-muted text-muted-foreground`}
               />
             </Field>
             <Field id="ownerEmail" label="Owner email (read-only)">
@@ -478,7 +416,7 @@ function AddStudioForm() {
                 id="ownerEmail"
                 readOnly
                 value={session?.user?.email ?? ""}
-                className={`${inputCls} cursor-not-allowed bg-slate-100 text-slate-500`}
+                className={`${inputCls} cursor-not-allowed bg-muted text-muted-foreground`}
               />
             </Field>
           </div>
@@ -494,8 +432,6 @@ function AddStudioForm() {
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…
                 </>
-              ) : isEdit ? (
-                "Save Changes"
               ) : (
                 "Add Studio"
               )}
@@ -505,13 +441,13 @@ function AddStudioForm() {
               variant="outline"
               onClick={handleReset}
               disabled={submitting}
-              className="h-11 rounded-xl border-slate-200 bg-white px-6 font-semibold text-slate-800 hover:bg-slate-100"
+              className="h-11 rounded-xl border-border bg-card px-6 font-semibold text-foreground hover:bg-muted"
             >
               Reset
             </Button>
           </div>
 
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-muted-foreground">
             On submit: saved to the studios collection, a success toast appears, and you are
             redirected to your listings.
           </p>
@@ -521,7 +457,6 @@ function AddStudioForm() {
   );
 }
 
-/* label + error wrapper */
 function Field({ id, label, error, children }) {
   return (
     <div className="space-y-1.5">
