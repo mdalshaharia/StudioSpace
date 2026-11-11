@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useSession } from "../lib/auth-client";
 import { authorizedFetch } from "../lib/getTokenFromClient";
+import ProductContext from "@/context/productContext";
 import { LoaderScreen } from "@/components/Skeletons";
 
 const LISTINGS_ROUTE = "/my-listings";
@@ -79,6 +80,7 @@ export default function AddStudioPage() {
 
 function AddStudioForm() {
   const router = useRouter();
+  const { refresh: refreshProducts } = useContext(ProductContext);
 
   const { data: session, isPending } = useSession();
   const [form, setForm] = useState(EMPTY);
@@ -190,8 +192,9 @@ function AddStudioForm() {
       return;
     }
     setSubmitting(false);
+    await refreshProducts();
     router.push(LISTINGS_ROUTE);
-    toast.success("Reload the page to see your new listings");
+    toast.success("Listing added.");
   };
 
   if (isPending || !session?.user) {
