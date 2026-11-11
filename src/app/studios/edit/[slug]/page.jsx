@@ -184,6 +184,7 @@ function EditStudioForm({ params }) {
       setSubmitting(false);
       await refreshProducts();
       router.push(LISTINGS_ROUTE);
+      toast.success('updated successfully')
     } catch (err) {
       toast.error(err.message || "Something went wrong. Please try again.");
       setSubmitting(false);
