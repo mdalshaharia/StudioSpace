@@ -39,7 +39,7 @@ export default function BookingWorks() {
           {STEPS.map((step, i) => (
             <li
               key={step.title}
-              className="group relative rounded-2xl border border-border bg-card p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xl hover:shadow-slate-200/80"
+              className="group relative rounded-2xl border border-border bg-card p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-lg hover:shadow-slate-900/10 dark:hover:shadow-black/30"
             >
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E64833] text-sm font-extrabold text-white shadow-md shadow-[#E64833]/20">
                 {i + 1}

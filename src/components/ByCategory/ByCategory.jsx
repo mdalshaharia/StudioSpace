@@ -82,7 +82,7 @@ export default function ByCategory() {
               >
                 <Link
                   href={categoryHref(category.category)}
-                  className="group relative flex h-36 w-full items-end overflow-hidden rounded-2xl border border-border p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833] hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70 sm:h-40 lg:h-44"
+                  className="group relative flex h-36 w-full items-end overflow-hidden rounded-2xl border border-border p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833] hover:shadow-lg hover:shadow-slate-900/10 dark:hover:shadow-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70 sm:h-40 lg:h-44"
                 >
                   {category.imageUrl && (
                     <Image

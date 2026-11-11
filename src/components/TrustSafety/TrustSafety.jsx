@@ -44,7 +44,7 @@ export default function TrustSafety() {
             {FEATURES.map(({ icon: Icon, title, text }) => (
               <li
                 key={title}
-                className="group rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xl hover:shadow-slate-200/80"
+                className="group rounded-2xl border border-border bg-card p-6 transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-lg hover:shadow-slate-900/10 dark:hover:shadow-black/30"
               >
                 <span className="grid h-11 w-11 place-items-center rounded-xl border border-[#E64833]/20 bg-[#E64833]/5 text-[#E64833] transition duration-300 group-hover:bg-[#E64833] group-hover:text-white">
                   <Icon className="h-5 w-5" aria-hidden="true" />

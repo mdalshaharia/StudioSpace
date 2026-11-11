@@ -8,7 +8,7 @@ export default function FeaturedCard({ studio }) {
   return (
     <Link
       href={`/studios/${studio._id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xl hover:shadow-slate-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xs hover:shadow-slate-900/10 dark:hover:shadow-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
     >
       {/* image area */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">

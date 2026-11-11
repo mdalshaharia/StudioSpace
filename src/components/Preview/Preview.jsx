@@ -70,10 +70,10 @@ export default function Preview() {
                       onClick={() => setSelected(isSelected ? null : id)}
                       className={`h-10 rounded-xl border transition duration-200 sm:h-12 ${
                         booked
-                          ? "cursor-not-allowed border-transparent bg-muted opacity-40"
+                          ? "cursor-not-allowed border-transparent bg-foreground/15 dark:bg-white/15"
                           : isSelected
-                          ? "border-[#E64833] bg-[#E64833]/10 shadow-[0_0_15px_rgba(230,72,51,0.15)] ring-1 ring-[#E64833]"
-                          : "border-border bg-muted/50 hover:border-[#E64833]/60 hover:bg-[#E64833]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/60"
+                          ? "border-[#E64833] bg-[#E64833]/10 shadow-[0_0_15px_rgba(230,72,51,0.15)] ring-1 ring-[#E64833] dark:bg-[#E64833]/20"
+                          : "border-border bg-muted/50 hover:border-[#E64833]/60 hover:bg-[#E64833]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/60 dark:bg-white/[0.06] dark:hover:bg-[#E64833]/10"
                       }`}
                     />
                   );
@@ -83,13 +83,13 @@ export default function Preview() {
           </div>
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-4 text-xs font-medium text-muted-foreground">
             <span className="flex items-center gap-2">
-              <i className="h-3.5 w-3.5 rounded-md border border-border bg-muted/50" /> Open
+              <i className="h-3.5 w-3.5 rounded-md border border-border bg-muted/50 dark:bg-white/[0.06]" /> Open
             </span>
             <span className="flex items-center gap-2">
-              <i className="h-3.5 w-3.5 rounded-md bg-muted opacity-40" /> Booked
+              <i className="h-3.5 w-3.5 rounded-md bg-foreground/15 dark:bg-white/15" /> Booked
             </span>
             <span className="flex items-center gap-2">
-              <i className="h-3.5 w-3.5 rounded-md border border-[#E64833] bg-[#E64833]/10" /> Selected
+              <i className="h-3.5 w-3.5 rounded-md border border-[#E64833] bg-[#E64833]/10 dark:bg-[#E64833]/20" /> Selected
             </span>
           </div>
         </div>

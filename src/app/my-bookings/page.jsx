@@ -125,9 +125,11 @@ export default function MyBookingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'Confirmed' }),
       });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      // console.log(data)
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.error(data.message || "Could not confirm the booking. Please try again.");
+        return;
+      }
       setBookings((prev) => prev.map((b) => (b._id === bookingId ? { ...b, status: 'Confirmed' } : b)));
       toast.success("Booking confirmed.");
     } catch {

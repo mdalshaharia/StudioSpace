@@ -86,7 +86,7 @@ export default function Footer() {
           <div className="lg:col-span-4">
             <Link href="/" className="group flex items-center gap-2.5" aria-label="StudioSpace home">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-white transition-transform duration-200 group-hover:scale-105">
-                <Image src="/brad-logo.png" height={22} width={22} alt="StudioSpace Logo" className="object-contain" />
+                <Image src="/brad-logo.png" height={22} width={22} alt="StudioSpace Logo" className="object-contain invert" />
               </span>
               <span className="text-xl font-extrabold tracking-tight text-white">
                 Studio<span className="text-[#E64833]">Space</span>

@@ -156,7 +156,7 @@ function Register() {
         <section className="mx-auto w-full max-w-lg px-4 py-8 sm:px-6 sm:py-12">
             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm sm:p-8">
                 <div className="flex justify-center mb-4">
-                        <Image src="/brad-logo.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
+                        <Image src="/brad-logo.png" alt="" width={28} height={28} className="h-7 w-7 object-contain dark:invert" />
                 </div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-heading text-center">Create account</h1>
 

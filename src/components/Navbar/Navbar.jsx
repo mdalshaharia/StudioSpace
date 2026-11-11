@@ -69,7 +69,7 @@ function Logo({ onClick }) {
   return (
     <Link href="/" onClick={onClick} className="group flex items-center gap-2.5" aria-label="StudioSpace home">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-[#244855]/10 text-[#244855] transition-transform duration-200 group-hover:scale-105 dark:bg-white/10 dark:text-heading">
-        <Image src="/brad-logo.png" height={22} width={22} alt="StudioSpace Logo" className="object-contain" />
+        <Image src="/brad-logo.png" height={22} width={22} alt="StudioSpace Logo" className="object-contain dark:invert" />
       </span>
       <span className="text-xl font-extrabold tracking-tight text-heading">
         Studio<span className="text-[#E64833]">Space</span>
