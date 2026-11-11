@@ -13,12 +13,12 @@ export default function FeaturedCard({ studio }) {
       {/* image area */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
         {image && (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={image}
             alt={studio.title}
-            fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className="object-cover transition duration-500 group-hover:scale-105"
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
