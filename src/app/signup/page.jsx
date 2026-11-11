@@ -32,7 +32,7 @@ const isUrl = (v) => {
 };
 
 const passwordRules = (pw) => [
-    { label: "At least 6 characters", ok: pw.length >= 6 },
+    { label: "At least 8 characters", ok: pw.length >= 8 },
     { label: "One uppercase letter", ok: /[A-Z]/.test(pw) },
     { label: "One lowercase letter", ok: /[a-z]/.test(pw) },
 ];
@@ -86,7 +86,7 @@ function Register() {
 
         if (!rules.every((r) => r.ok)) {
             const msg =
-                "Password must be at least 6 characters and contain an uppercase and a lowercase letter.";
+                "Password must be at least 8 characters and contain an uppercase and a lowercase letter.";
             setErrors({ password: msg });
             return;
         }
@@ -109,13 +109,20 @@ function Register() {
                 router.push('/signin')
             }
             if (error) {
-                if (error.message === 'User already exists. Use another email.') {
-                    setErrors({ form: 'An account with this email already exists, try another one.' });
-                } else {
-                    setErrors({ form: error.message || "Something went wrong. Please try again." });
-                }
-                return
-
+                const friendly = {
+                    USER_ALREADY_EXISTS: "An account with this email already exists. Try signing in instead.",
+                    PASSWORD_TOO_SHORT: "Password must be at least 8 characters.",
+                    INVALID_EMAIL: "Please enter a valid email address.",
+                };
+                const alreadyUsed = (error.message || "").toLowerCase().includes("already exists");
+                setErrors({
+                    form:
+                        friendly[error.code] ??
+                        (alreadyUsed
+                            ? "An account with this email already exists. Try signing in instead."
+                            : error.message || "Something went wrong. Please try again."),
+                });
+                return;
             }
         }
         catch (err) {

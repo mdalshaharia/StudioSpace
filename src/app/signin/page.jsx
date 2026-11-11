@@ -78,7 +78,7 @@ function SignIn() {
                 }, 3000);
             }
             if (error) {
-                if (error.message === 'Invalid email or password') {
+                if (error.code === "INVALID_EMAIL_OR_PASSWORD" || error.message === "Invalid email or password") {
                     setErrors({ form: "Incorrect email or password. Please try again." });
                 } else {
                     setErrors({ form: error.message || "There was a problem signing in." });

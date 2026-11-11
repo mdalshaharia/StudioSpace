@@ -49,7 +49,6 @@ StudioSpace is a peer-to-peer marketplace for creative spaces. Creators can find
 
    Create a `.env.local` file in the project root:
    ```env
-   NEXT_PUBLIC_API_URL=http://localhost:5000
    ```
    Add any authentication keys your setup needs (for example Better Auth or Firebase values) to the same file.
 
@@ -69,23 +68,129 @@ StudioSpace is a peer-to-peer marketplace for creative spaces. Creators can find
 
 This project does not use an email verification step. Registration works instantly, so:
 
-Examiner can register a new account with any email address, even a made-up one such as test123@mail.com. No confirmation email is sent and no link needs to be clicked.
+Examiner can register a new account with any email address. No confirmation email is sent and no link needs to be clicked.
 After registering you are signed in automatically and redirected to the home page.
 
 ## Project Structure
 
 ```
-app/
-  page.jsx                  Home (hero slider, browse, featured, how it works)
-  explore/                  Search, filter and sort studios
-  studios/[id]/             Studio details and booking modal
-  dashboard/
-    studios/new/            Add a new studio
-    bookings/               My bookings
-  my-listings/              Host listings
-  login/  register/         Authentication pages
-  how-it-works/  about/     Information pages
-components/                 Navbar, Footer, EmptyState, BookingModal and more
+ src/
+      app/
+          about/
+              page.jsx
+          add-studio/
+              layout.js
+              page.jsx
+          api/
+              auth/
+                  [...all]/
+                      route.js
+          contact/
+              page.jsx
+          dashboard/
+              page.jsx
+          how-it-works/
+              page.jsx
+          lib/
+              auth.js
+              auth-client.js
+              categories.js
+              getTokenFromClient.js
+              getTokenFromServer.js
+              uploadImage.js
+          my-bookings/
+              page.jsx
+          my-listings/
+              page.jsx
+          privacy/
+              page.jsx
+          signin/
+              page.jsx
+          signup/
+              page.jsx
+          studios/
+              [slug]/
+                  layout.js
+                  loading.jsx
+                  page.jsx
+              edit/
+                  [slug]/
+                      loading.jsx
+                      page.jsx
+              page.jsx
+          terms/
+              page.jsx
+          upload-image/
+              page.jsx
+          favicon.ico
+          globals.css
+          layout.js
+          not-found.jsx
+          page.js
+      components/
+          Banner/
+              Banner.jsx
+          BookingWorks/
+              BookingWorks.jsx
+          ByCategory/
+              ByCategory.jsx
+          Card/
+              BookingsCard/
+                  BookingsCard.jsx
+              ListingCard/
+                  ListingCard.jsx
+          EmptyState/
+              EmptyState.jsx
+          Featured/
+              Featured.jsx
+              FeaturedCard.jsx
+          Footer/
+              Footer.jsx
+          Hero/
+              Hero.jsx
+          Modal/
+              BookingModal.jsx
+          Navbar/
+              Navbar.jsx
+          Preview/
+              Preview.jsx
+          Skeletons/
+              index.js
+              Skeletons.jsx
+          theme/
+              theme-provider.jsx
+              theme-toggle.jsx
+          TrustSafety/
+              TrustSafety.jsx
+          ui/
+              accordion.jsx
+              alert.jsx
+              alert-dialog.jsx
+              avatar.jsx
+              badge.jsx
+              button.jsx
+              calendar.jsx
+              card.jsx
+              carousel.jsx
+              checkbox.jsx
+              dialog.jsx
+              dropdown-menu.jsx
+              input.jsx
+              label.jsx
+              popover.jsx
+              select.jsx
+              separator.jsx
+              sheet.jsx
+              skeleton.jsx
+              sonner.jsx
+              table.jsx
+              tabs.jsx
+              textarea.jsx
+      context/
+          productContext.jsx
+      lib/
+          utils.js
+      proxy.js
 ```
 
 ## Author
