@@ -13,7 +13,7 @@ export default function FeaturedCard({ studio }) {
       {/* image area */}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
         {image && (
-          <Image
+          <img
             src={image}
             alt={studio.title}
             fill
