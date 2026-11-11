@@ -82,18 +82,28 @@ export default function MyBookingsPage() {
     };
   }, [session]);
 
-  const confirmCancel = async (bookingId) => {
+  const confirmCancel = async (booking) => {
     setCancelling(true);
     try {
-      const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${bookingId}?userId=${session?.user.id}`, {
-        method:'DELETE'
-      });
+      const res = await authorizedFetch(
+        `${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${booking.studioId}?userId=${session?.user.id}` +
+          `&date=${encodeURIComponent(booking.date ?? "")}` +
+          `&startTime=${encodeURIComponent(booking.startTime ?? "")}` +
+          `&endTime=${encodeURIComponent(booking.endTime ?? "")}`,
+        {
+          method:'DELETE'
+        }
+      );
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.deletedCount) {
         toast.error("Could not cancel the booking. Please try again.");
         return;
       }
-      setBookings((prev) => prev.filter((b) => b.studioId !== bookingId));
+      setBookings((prev) =>
+        prev.filter(
+          (b) => !(b.studioId === booking.studioId && b.startTime === booking.startTime && b.endTime === booking.endTime)
+        )
+      );
       toast.success("Booking cancelled.");
       setTarget(null);
     } catch {
@@ -234,7 +244,7 @@ export default function MyBookingsPage() {
               disabled={cancelling}
               onClick={(e) => {
                 e.preventDefault(); // stay open until the request finishes
-                confirmCancel(target.studioId);
+                confirmCancel(target);
               }}
               className="bg-red-600 text-white hover:bg-red-500"
             >
