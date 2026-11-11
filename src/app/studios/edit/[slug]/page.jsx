@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useSession } from "@/app/lib/auth-client";
 import { authorizedFetch } from "@/app/lib/getTokenFromClient";
+import ProductContext from "@/context/productContext";
 import { LoaderScreen } from "@/components/Skeletons";
 
 const LISTINGS_ROUTE = "/my-listings";
@@ -61,6 +62,7 @@ export default function EditStudioPage({ params }) {
 function EditStudioForm({ params }) {
   const router = useRouter();
   const { slug: studioId } = use(params);
+  const { refresh: refreshProducts } = useContext(ProductContext);
 
   const { data: session, isPending } = useSession();
   const [form, setForm] = useState(null);
@@ -180,8 +182,8 @@ function EditStudioForm({ params }) {
       }
 
       setSubmitting(false);
+      await refreshProducts();
       router.push(LISTINGS_ROUTE);
-      toast.warning("Reload the page to see your new listings");
     } catch (err) {
       toast.error(err.message || "Something went wrong. Please try again.");
       setSubmitting(false);

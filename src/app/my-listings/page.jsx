@@ -49,7 +49,7 @@ export default function MyListingsPage() {
   const [listings, setListings] = useState([])
   const [loading, setLoading] = useState(true);
   const { data: session, isPending } = useSession();
-   const { products = [], error } = useContext(ProductContext);
+  const { products = [], error, refresh: refreshProducts } = useContext(ProductContext);
  
 
   /* fetch listings */
@@ -105,6 +105,8 @@ useEffect(() => {
       setStudios((prev) => prev.filter((s) => s._id !== studioId));
       toast.success("Listing deleted.");
       setToDelete(null);
+      router.refresh();
+      refreshProducts();
     } catch {
       toast.error("Could not delete the listing. Please try again.");
     } finally {
