@@ -88,9 +88,11 @@ export default function MyBookingsPage() {
       const res = await authorizedFetch(`${process.env.NEXT_PUBLIC_SERVER_BASE_URI}/studio-bookings/${bookingId}?userId=${session?.user.id}`, {
         method:'DELETE'
       });
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      // console.log(data)
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.deletedCount) {
+        toast.error("Could not cancel the booking. Please try again.");
+        return;
+      }
       setBookings((prev) => prev.filter((b) => b.studioId !== bookingId));
       toast.success("Booking cancelled.");
       setTarget(null);
