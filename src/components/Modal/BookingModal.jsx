@@ -104,7 +104,7 @@ export default function BookingModal({ studio, open, onOpenChange }) {
 
       if (clash) {
         toast.error(
-          `That time clashes with a confirmed booking (${clash.startTime}–${clash.endTime} on ${bookingDate}). Please pick a different slot.`
+          `That time clashes with an existing booking (${clash.startTime}–${clash.endTime} on ${bookingDate}). Please pick a different slot.`
         );
         return;
       }
