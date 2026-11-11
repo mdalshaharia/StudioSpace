@@ -98,7 +98,7 @@ export default function BookingModal({ studio, open, onOpenChange }) {
       if (!conflictsRes.ok) throw new Error("Could not check availability.");
 
       const confirmed = await conflictsRes.json();
-      const clash = confirmed.find(
+      const clash = Array.isArray(confirmed) && confirmed.find(
         (b) => b.startTime < newEnd && b.endTime > newStart
       );
 
@@ -159,7 +159,10 @@ export default function BookingModal({ studio, open, onOpenChange }) {
       }
     } catch (err) {
       console.error("Booking failed:", err);
-      toast.error("An error occurred while booking.");
+      /* the session-expired path already shows its own toast + redirect */
+      if (err?.message !== "session-expired; sign-in in progress") {
+        toast.error(err?.message || "An error occurred while booking.");
+      }
     } finally {
       setSubmitting(false);
     }
