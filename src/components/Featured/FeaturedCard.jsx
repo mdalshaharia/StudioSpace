@@ -1,33 +1,20 @@
 import Link from "next/link";
-// import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
-
-export default function FeaturedCard({ studio }) {
+export default function FeaturedCard({
+  studio
+}) {
   const image = studio.imageURL ?? studio.imageUrl;
-
-  return (
-    <Link
-      href={`/studios/${studio._id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xs hover:shadow-slate-900/10 dark:hover:shadow-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70"
-    >
-      {/* image area */}
+  return <Link href={`/studios/${studio._id}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#E64833]/40 hover:shadow-xs hover:shadow-slate-900/10 dark:hover:shadow-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E64833]/70">
+      {}
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-        {image && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={image}
-            alt={studio.title}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          />
-        )}
+        {image && <img src={image} alt={studio.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
         <span className="absolute bottom-3 left-4 text-[10px] font-bold uppercase tracking-wider text-white drop-shadow">
           {studio.amenities?.[0] ?? studio.category}
         </span>
       </div>
 
-      {/* body */}
+      {}
       <div className="flex flex-1 flex-col p-5">
         <span className="self-start rounded-full border border-[#E64833]/20 bg-[#E64833]/5 px-2.5 py-0.5 text-[11px] font-medium text-[#E64833]">
           {studio.category}
@@ -37,9 +24,7 @@ export default function FeaturedCard({ studio }) {
           {studio.title}
         </h3>
         <p className="mt-1.5 text-xs text-muted-foreground">
-          {[studio.location, studio.maxCapacity && `${studio.maxCapacity} guests`]
-            .filter(Boolean)
-            .join(" · ")}
+          {[studio.location, studio.maxCapacity && `${studio.maxCapacity} guests`].filter(Boolean).join(" · ")}
         </p>
 
         <span className="mt-2.5 flex items-center gap-1 text-xs font-semibold text-[#E64833] opacity-80 transition duration-200 group-hover:opacity-100">
@@ -52,13 +37,10 @@ export default function FeaturedCard({ studio }) {
             <span className="font-extrabold text-heading text-base">${studio.hourlyRate}</span>
             <span className="text-muted-foreground text-xs"> / hour</span>
           </span>
-          {studio.rating != null && (
-            <span className="flex items-center gap-1 font-semibold text-[#E64833] text-xs">
+          {studio.rating != null && <span className="flex items-center gap-1 font-semibold text-[#E64833] text-xs">
               ★ {Number(studio.rating).toFixed(1)}
-            </span>
-          )}
+            </span>}
         </p>
       </div>
-    </Link>
-  );
+    </Link>;
 }

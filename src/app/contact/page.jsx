@@ -1,30 +1,22 @@
 import { Mail, MapPin, MessagesSquare } from "lucide-react";
-
 export const metadata = {
-  title: "Contact | StudioSpace",
+  title: "Contact | StudioSpace"
 };
-
-const CARDS = [
-  {
-    icon: Mail,
-    title: "Email us",
-    text: "hello@studiospace.app",
-  },
-  {
-    icon: MessagesSquare,
-    title: "Chat",
-    text: "Reply time within one business day.",
-  },
-  {
-    icon: MapPin,
-    title: "Studio city",
-    text: "We're remote-first, supporting hosts worldwide.",
-  },
-];
-
+const CARDS = [{
+  icon: Mail,
+  title: "Email us",
+  text: "hello@studiospace.app"
+}, {
+  icon: MessagesSquare,
+  title: "Chat",
+  text: "Reply time within one business day."
+}, {
+  icon: MapPin,
+  title: "Studio city",
+  text: "We're remote-first, supporting hosts worldwide."
+}];
 export default function ContactPage() {
-  return (
-    <main className="min-h-screen bg-background text-foreground">
+  return <main className="min-h-screen bg-background text-foreground">
       <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
         <p className="text-xs font-semibold uppercase tracking-wider text-[#E64833]">
           Contact
@@ -39,18 +31,17 @@ export default function ContactPage() {
         </p>
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-3">
-          {CARDS.map(({ icon: Icon, title, text }) => (
-            <li
-              key={title}
-              className="rounded-2xl border border-border bg-card p-6 shadow-sm"
-            >
+          {CARDS.map(({
+          icon: Icon,
+          title,
+          text
+        }) => <li key={title} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#E64833]/10 text-[#E64833]">
                 <Icon className="h-5 w-5" aria-hidden />
               </span>
               <h2 className="mt-4 text-sm font-bold text-heading">{title}</h2>
               <p className="mt-1 text-sm text-muted-foreground">{text}</p>
-            </li>
-          ))}
+            </li>)}
         </ul>
 
         <p className="mt-12 border-t border-border pt-6 text-sm text-muted-foreground">
@@ -59,6 +50,5 @@ export default function ContactPage() {
           the account menu.
         </p>
       </section>
-    </main>
-  );
+    </main>;
 }

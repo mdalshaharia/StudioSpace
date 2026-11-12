@@ -8,19 +8,16 @@ import BookingWorks from "@/components/BookingWorks/BookingWorks";
 import TrustSafety from "@/components/TrustSafety/TrustSafety";
 import Footer from "@/components/Footer/Footer";
 import Banner from "@/components/Banner/Banner";
-
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-card text-foreground">
+  return <main className="min-h-screen bg-card text-foreground">
       <Navbar />
       <Banner></Banner>
-      {/* <Hero /> */}
+      {}
       <ByCategory />
       <Featured />
       <Preview />
       <BookingWorks />
       <TrustSafety />
       <Footer />
-    </main>
-  );
+    </main>;
 }

@@ -2,28 +2,26 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
 import { jwt } from "better-auth/plugins";
-
 const client = new MongoClient(process.env.DB_URL);
 const db = client.db('studio-space');
-
 export const auth = betterAuth({
   trustedOrigins: ["http://localhost:3000", "https://studio-space-ivory.vercel.app"],
   emailAndPassword: {
     enabled: true,
-    autoSignIn: false, // require explicit sign-in after registration
+    autoSignIn: false
   },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    },
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET
+    }
   },
   account: {
     accountLinking: {
       enabled: true,
       trustedProviders: ["google", "credential"],
-      requireLocalEmailVerified: false,
-    },
+      requireLocalEmailVerified: false
+    }
   },
   plugins: [jwt()],
   session: {
@@ -34,6 +32,6 @@ export const auth = betterAuth({
     }
   },
   database: mongodbAdapter(db, {
-    client,
-  }),
+    client
+  })
 });
